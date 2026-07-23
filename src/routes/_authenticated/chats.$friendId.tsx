@@ -1,9 +1,9 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getMessages, sendMessage, getFriendProfile, type Message } from "@/lib/chat-api";
+import { getMessages, sendMessage, getFriendProfile, deleteChat, type Message } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Trash2 } from "lucide-react";
 import { Avatar } from "./chats.index";
 import { toast } from "sonner";
 
@@ -11,6 +11,19 @@ export const Route = createFileRoute("/_authenticated/chats/$friendId")({
   ssr: false,
   component: ConversationPage,
 });
+
+function formatMsgTime(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const sameYear = d.getFullYear() === now.getFullYear();
+  return d.toLocaleDateString([], {
+    month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit",
+    year: sameYear ? undefined : "numeric",
+  });
+}
 
 function ConversationPage() {
   const { friendId } = useParams({ from: "/_authenticated/chats/$friendId" });
