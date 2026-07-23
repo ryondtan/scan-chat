@@ -14,7 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
-import { Route as AuthenticatedChatsRouteImport } from './routes/_authenticated/chats'
+import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats.index'
 import { Route as AuthenticatedChatsFriendIdRouteImport } from './routes/_authenticated/chats.$friendId'
 
 const AuthRoute = AuthRouteImport.update({
@@ -41,58 +41,58 @@ const AuthenticatedFriendsRoute = AuthenticatedFriendsRouteImport.update({
   path: '/friends',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedChatsRoute = AuthenticatedChatsRouteImport.update({
-  id: '/chats',
-  path: '/chats',
+const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
+  id: '/chats/',
+  path: '/chats/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedChatsFriendIdRoute =
   AuthenticatedChatsFriendIdRouteImport.update({
-    id: '/$friendId',
-    path: '/$friendId',
-    getParentRoute: () => AuthenticatedChatsRoute,
+    id: '/chats/$friendId',
+    path: '/chats/$friendId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chats': typeof AuthenticatedChatsRouteWithChildren
   '/friends': typeof AuthenticatedFriendsRoute
   '/me': typeof AuthenticatedMeRoute
   '/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
+  '/chats/': typeof AuthenticatedChatsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/chats': typeof AuthenticatedChatsRouteWithChildren
   '/friends': typeof AuthenticatedFriendsRoute
   '/me': typeof AuthenticatedMeRoute
   '/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
+  '/chats': typeof AuthenticatedChatsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/chats': typeof AuthenticatedChatsRouteWithChildren
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
+  '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/chats' | '/friends' | '/me' | '/chats/$friendId'
+  fullPaths: '/' | '/auth' | '/friends' | '/me' | '/chats/$friendId' | '/chats/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/chats' | '/friends' | '/me' | '/chats/$friendId'
+  to: '/' | '/auth' | '/friends' | '/me' | '/chats/$friendId' | '/chats'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/chats'
     | '/_authenticated/friends'
     | '/_authenticated/me'
     | '/_authenticated/chats/$friendId'
+    | '/_authenticated/chats/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -138,44 +138,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFriendsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/chats': {
-      id: '/_authenticated/chats'
+    '/_authenticated/chats/': {
+      id: '/_authenticated/chats/'
       path: '/chats'
-      fullPath: '/chats'
-      preLoaderRoute: typeof AuthenticatedChatsRouteImport
+      fullPath: '/chats/'
+      preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chats/$friendId': {
       id: '/_authenticated/chats/$friendId'
-      path: '/$friendId'
+      path: '/chats/$friendId'
       fullPath: '/chats/$friendId'
       preLoaderRoute: typeof AuthenticatedChatsFriendIdRouteImport
-      parentRoute: typeof AuthenticatedChatsRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-interface AuthenticatedChatsRouteChildren {
-  AuthenticatedChatsFriendIdRoute: typeof AuthenticatedChatsFriendIdRoute
-}
-
-const AuthenticatedChatsRouteChildren: AuthenticatedChatsRouteChildren = {
-  AuthenticatedChatsFriendIdRoute: AuthenticatedChatsFriendIdRoute,
-}
-
-const AuthenticatedChatsRouteWithChildren =
-  AuthenticatedChatsRoute._addFileChildren(AuthenticatedChatsRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedChatsRoute: typeof AuthenticatedChatsRouteWithChildren
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
+  AuthenticatedChatsFriendIdRoute: typeof AuthenticatedChatsFriendIdRoute
+  AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedChatsRoute: AuthenticatedChatsRouteWithChildren,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
+  AuthenticatedChatsFriendIdRoute: AuthenticatedChatsFriendIdRoute,
+  AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
