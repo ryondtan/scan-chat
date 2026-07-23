@@ -72,6 +72,16 @@ export async function sendMessage(friendId: string, content: string) {
   if (error) throw error;
 }
 
+export async function deleteChat(friendId: string) {
+  const { data: userRes } = await supabase.auth.getUser();
+  const me = userRes.user!.id;
+  const { error } = await supabase
+    .from("messages")
+    .delete()
+    .or(`and(sender_id.eq.${me},recipient_id.eq.${friendId}),and(sender_id.eq.${friendId},recipient_id.eq.${me})`);
+  if (error) throw error;
+}
+
 export async function getFriendProfile(friendId: string): Promise<Profile | null> {
   const { data, error } = await supabase.from("profiles").select("*").eq("id", friendId).maybeSingle();
   if (error) throw error;
