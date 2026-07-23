@@ -1,9 +1,9 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getMessages, sendMessage, getFriendProfile, type Message } from "@/lib/chat-api";
+import { getMessages, sendMessage, getFriendProfile, deleteChat, type Message } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Trash2 } from "lucide-react";
 import { Avatar } from "./chats.index";
 import { toast } from "sonner";
 
@@ -11,6 +11,19 @@ export const Route = createFileRoute("/_authenticated/chats/$friendId")({
   ssr: false,
   component: ConversationPage,
 });
+
+function formatMsgTime(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const sameYear = d.getFullYear() === now.getFullYear();
+  return d.toLocaleDateString([], {
+    month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit",
+    year: sameYear ? undefined : "numeric",
+  });
+}
 
 function ConversationPage() {
   const { friendId } = useParams({ from: "/_authenticated/chats/$friendId" });
@@ -20,6 +33,8 @@ function ConversationPage() {
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const navigate = useNavigate();
 
   const { data: friend } = useQuery({
     queryKey: ["friend", friendId], queryFn: () => getFriendProfile(friendId),
@@ -91,21 +106,48 @@ function ConversationPage() {
           <div className="font-semibold truncate">{friend?.display_name ?? "…"}</div>
           {friend && <div className="text-xs text-muted-foreground truncate">@{friend.username}</div>}
         </div>
+        <button
+          type="button"
+          onClick={async () => {
+            if (!confirm("Delete this entire chat? This cannot be undone.")) return;
+            try {
+              await deleteChat(friendId);
+              toast.success("Chat deleted");
+              navigate({ to: "/chats" });
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Failed to delete");
+            }
+          }}
+          className="p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-destructive"
+          aria-label="Delete chat"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
       </header>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
-        {messages.map((m) => {
+        {messages.map((m, i) => {
           const mine = m.sender_id === me;
+          const prev = messages[i - 1];
+          const showTime = !prev || new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() > 5 * 60 * 1000;
           return (
-            <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-              <div
-                className="max-w-[75%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm"
-                style={{
-                  backgroundColor: mine ? "var(--chat-bubble-me)" : "var(--chat-bubble-them)",
-                  color: mine ? "var(--chat-bubble-me-foreground)" : "var(--chat-bubble-them-foreground)",
-                }}
-              >
-                {m.content}
+            <div key={m.id}>
+              {showTime && (
+                <div className="text-center text-[11px] text-muted-foreground py-2">
+                  {formatMsgTime(m.created_at)}
+                </div>
+              )}
+              <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                <div
+                  className="max-w-[75%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm"
+                  style={{
+                    backgroundColor: mine ? "var(--chat-bubble-me)" : "var(--chat-bubble-them)",
+                    color: mine ? "var(--chat-bubble-me-foreground)" : "var(--chat-bubble-them-foreground)",
+                  }}
+                  title={new Date(m.created_at).toLocaleString()}
+                >
+                  {m.content}
+                </div>
               </div>
             </div>
           );

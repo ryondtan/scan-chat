@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { getFriends, type Profile } from "@/lib/chat-api";
+import { getFriends, deleteChat, type Profile } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chats/")({
   ssr: false,
@@ -67,16 +68,37 @@ function ChatsPage() {
         <EmptyState />
       ) : (
         <ul className="divide-y">
-          {friends.map((f) => <ChatRow key={f.id} friend={f} last={lastByFriend[f.id]} />)}
+          {friends.map((f) => (
+            <ChatRow
+              key={f.id}
+              friend={f}
+              last={lastByFriend[f.id]}
+              onDeleted={() => setLastByFriend((prev) => {
+                const next = { ...prev }; delete next[f.id]; return next;
+              })}
+            />
+          ))}
         </ul>
       )}
     </div>
   );
 }
 
-function ChatRow({ friend, last }: { friend: Profile; last?: LastMsg }) {
+function ChatRow({ friend, last, onDeleted }: { friend: Profile; last?: LastMsg; onDeleted: () => void }) {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(`Delete chat with ${friend.display_name}?`)) return;
+    try {
+      await deleteChat(friend.id);
+      onDeleted();
+      toast.success("Chat deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete");
+    }
+  };
   return (
-    <li>
+    <li className="group relative">
       <Link to="/chats/$friendId" params={{ friendId: friend.id }}
         className="flex items-center gap-3 px-4 py-3 hover:bg-accent/40 transition">
         <Avatar profile={friend} />
@@ -93,6 +115,14 @@ function ChatRow({ friend, last }: { friend: Profile; last?: LastMsg }) {
           </div>
         </div>
       </Link>
+      <button
+        type="button"
+        onClick={handleDelete}
+        aria-label="Delete chat"
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-md bg-card/80 text-muted-foreground hover:text-destructive hover:bg-accent opacity-0 group-hover:opacity-100 focus:opacity-100 transition"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
     </li>
   );
 }
