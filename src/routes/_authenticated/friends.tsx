@@ -6,7 +6,7 @@ import {
   getIncomingRequests, getOutgoingRequests,
   acceptFriendRequest, declineFriendRequest, cancelFriendRequest,
 } from "@/lib/chat-api";
-import { Avatar } from "./chats";
+import { Avatar } from "./chats.index";
 import { toast } from "sonner";
 import { UserPlus, ScanLine, X, Check } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";

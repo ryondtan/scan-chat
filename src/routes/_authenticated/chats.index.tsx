@@ -5,7 +5,7 @@ import { getFriends, type Profile } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/chats")({
+export const Route = createFileRoute("/_authenticated/chats/")({
   ssr: false,
   component: ChatsPage,
 });
