@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { getFriends, type Profile } from "@/lib/chat-api";
+import { getFriends, deleteChat, type Profile } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chats/")({
   ssr: false,
