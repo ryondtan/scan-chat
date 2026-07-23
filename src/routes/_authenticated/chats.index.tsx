@@ -68,7 +68,16 @@ function ChatsPage() {
         <EmptyState />
       ) : (
         <ul className="divide-y">
-          {friends.map((f) => <ChatRow key={f.id} friend={f} last={lastByFriend[f.id]} />)}
+          {friends.map((f) => (
+            <ChatRow
+              key={f.id}
+              friend={f}
+              last={lastByFriend[f.id]}
+              onDeleted={() => setLastByFriend((prev) => {
+                const next = { ...prev }; delete next[f.id]; return next;
+              })}
+            />
+          ))}
         </ul>
       )}
     </div>
