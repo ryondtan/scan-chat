@@ -34,6 +34,8 @@ function ConversationPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const navigate = useNavigate();
+
   const { data: friend } = useQuery({
     queryKey: ["friend", friendId], queryFn: () => getFriendProfile(friendId),
   });
