@@ -79,3 +79,84 @@ export async function getFriendProfile(friendId: string): Promise<Profile | null
 }
 
 export const QR_PREFIX = "pingr:user:";
+
+export type FriendRequest = {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  status: string;
+  created_at: string;
+  sender?: Profile;
+  recipient?: Profile;
+};
+
+export async function sendFriendRequest(username: string): Promise<Profile> {
+  const uname = username.trim().toLowerCase();
+  const { data: userRes } = await supabase.auth.getUser();
+  const me = userRes.user!.id;
+  const { data: prof, error: pErr } = await supabase
+    .from("profiles").select("*").eq("username", uname).maybeSingle();
+  if (pErr) throw pErr;
+  if (!prof) throw new Error("User not found");
+  if (prof.id === me) throw new Error("That's you!");
+
+  // Already friends?
+  const { data: existing } = await supabase
+    .from("friendships").select("id").eq("user_id", me).eq("friend_id", prof.id).maybeSingle();
+  if (existing) throw new Error(`You're already friends with @${prof.username}`);
+
+  // Did they already send you a request? auto-accept
+  const { data: incoming } = await supabase
+    .from("friend_requests").select("*")
+    .eq("sender_id", prof.id).eq("recipient_id", me).eq("status", "pending").maybeSingle();
+  if (incoming) {
+    const { error: uErr } = await supabase.from("friend_requests")
+      .update({ status: "accepted" }).eq("id", incoming.id);
+    if (uErr) throw uErr;
+    return prof as Profile;
+  }
+
+  const { error } = await supabase.from("friend_requests")
+    .upsert({ sender_id: me, recipient_id: prof.id, status: "pending" }, { onConflict: "sender_id,recipient_id" });
+  if (error) throw error;
+  return prof as Profile;
+}
+
+export async function getIncomingRequests(): Promise<FriendRequest[]> {
+  const { data: userRes } = await supabase.auth.getUser();
+  const me = userRes.user!.id;
+  const { data, error } = await supabase
+    .from("friend_requests")
+    .select("*, sender:profiles!friend_requests_sender_id_fkey(id, username, display_name, avatar_url)")
+    .eq("recipient_id", me).eq("status", "pending")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as FriendRequest[];
+}
+
+export async function getOutgoingRequests(): Promise<FriendRequest[]> {
+  const { data: userRes } = await supabase.auth.getUser();
+  const me = userRes.user!.id;
+  const { data, error } = await supabase
+    .from("friend_requests")
+    .select("*, recipient:profiles!friend_requests_recipient_id_fkey(id, username, display_name, avatar_url)")
+    .eq("sender_id", me).eq("status", "pending")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as FriendRequest[];
+}
+
+export async function acceptFriendRequest(id: string) {
+  const { error } = await supabase.from("friend_requests").update({ status: "accepted" }).eq("id", id);
+  if (error) throw error;
+}
+
+export async function declineFriendRequest(id: string) {
+  const { error } = await supabase.from("friend_requests").update({ status: "declined" }).eq("id", id);
+  if (error) throw error;
+}
+
+export async function cancelFriendRequest(id: string) {
+  const { error } = await supabase.from("friend_requests").delete().eq("id", id);
+  if (error) throw error;
+}
