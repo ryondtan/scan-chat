@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getMessages, sendMessage, getFriendProfile, type Message } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Send } from "lucide-react";
-import { Avatar } from "./chats";
+import { Avatar } from "./chats.index";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chats/$friendId")({
