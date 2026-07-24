@@ -25,6 +25,8 @@ import {
   GraduationCap,
   Settings,
   LogOut,
+  MessageCircle,
+  Users,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -40,6 +42,8 @@ export const Route = createFileRoute("/_authenticated")({
 const nav = [
   { to: "/dashboard", label: "Home", icon: Home },
   { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
+  { to: "/chats", label: "Chats", icon: MessageCircle },
+  { to: "/friends", label: "Friends", icon: Users },
   { to: "/homework", label: "Homework", icon: BookOpen },
   { to: "/notes", label: "Notes", icon: StickyNote },
   { to: "/flashcards", label: "Flashcards", icon: Brain },
