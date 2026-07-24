@@ -64,10 +64,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Pingr — Chat with friends by QR" },
-      { name: "description", content: "Scan a QR or share your code to chat instantly with friends. Real-time private messaging, simple and fast." },
-      { property: "og:title", content: "Pingr — Chat with friends by QR" },
-      { property: "og:description", content: "Scan a QR or share your code to chat instantly with friends." },
+      { title: "Lumen — AI Learning Platform" },
+      { name: "description", content: "AI-powered learning workspace for students and teachers: tutor, homework, notes, flashcards, and quizzes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

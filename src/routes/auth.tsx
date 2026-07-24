@@ -8,7 +8,7 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/chats" });
+    if (data.session) throw redirect({ to: "/dashboard" });
   },
   component: AuthPage,
 });
@@ -47,7 +47,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/chats" });
+      navigate({ to: "/dashboard" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
       toast.error(msg.includes("duplicate") ? "Username already taken" : msg);
@@ -61,8 +61,8 @@ function AuthPage() {
           <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg mb-4">
             <MessageCircle className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold">Pingr</h1>
-          <p className="text-sm text-muted-foreground mt-1">Chat with friends by QR</p>
+          <h1 className="text-2xl font-bold">Lumen</h1>
+          <p className="text-sm text-muted-foreground mt-1">AI learning for students and teachers</p>
         </div>
         <div className="bg-card rounded-2xl border shadow-sm p-6">
           <div className="flex gap-1 p-1 bg-muted rounded-lg mb-5">
