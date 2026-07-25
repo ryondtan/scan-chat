@@ -26,7 +26,8 @@ import {
   Settings,
   LogOut,
   MessageCircle,
-  Users,
+  CalendarDays,
+  FolderOpen,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -40,15 +41,16 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 const nav = [
-  { to: "/dashboard", label: "Home", icon: Home },
+  { to: "/dashboard", label: "Dashboard", icon: Home },
   { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
   { to: "/chats", label: "Chats", icon: MessageCircle },
-  { to: "/friends", label: "Friends", icon: Users },
-  { to: "/homework", label: "Homework", icon: BookOpen },
   { to: "/notes", label: "Notes", icon: StickyNote },
+  { to: "/homework", label: "Homework", icon: BookOpen },
   { to: "/flashcards", label: "Flashcards", icon: Brain },
-  { to: "/quiz", label: "Quiz Generator", icon: Sparkles },
-  { to: "/teacher", label: "Teacher", icon: GraduationCap },
+  { to: "/quiz", label: "Quiz", icon: Sparkles },
+  { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/files", label: "Files", icon: FolderOpen },
+  { to: "/teacher", label: "Teacher Workspace", icon: GraduationCap },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
