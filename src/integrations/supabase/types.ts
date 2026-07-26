@@ -323,7 +323,10 @@ export type Database = {
       user_files: {
         Row: {
           created_at: string
+          folder_id: string | null
           id: string
+          is_favorite: boolean
+          last_accessed_at: string | null
           mime_type: string | null
           name: string
           path: string
@@ -333,7 +336,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          folder_id?: string | null
           id?: string
+          is_favorite?: boolean
+          last_accessed_at?: string | null
           mime_type?: string | null
           name: string
           path: string
@@ -343,7 +349,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          folder_id?: string | null
           id?: string
+          is_favorite?: boolean
+          last_accessed_at?: string | null
           mime_type?: string | null
           name?: string
           path?: string
@@ -353,10 +362,52 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "user_files_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "user_folders"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_files_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "user_folders"
             referencedColumns: ["id"]
           },
         ]
