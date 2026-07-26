@@ -29,6 +29,7 @@ import {
   CalendarDays,
   FolderOpen,
 } from "lucide-react";
+import { AskAIButton } from "@/components/ask-ai";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -67,6 +68,7 @@ function AuthenticatedLayout() {
           <main className="flex-1 min-w-0">
             <Outlet />
           </main>
+          <AskAIButton />
         </div>
       </div>
     </SidebarProvider>
