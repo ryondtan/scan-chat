@@ -1,0 +1,2 @@
+ALTER TABLE public.tutor_messages ADD COLUMN IF NOT EXISTS context text NOT NULL DEFAULT 'tutor';
+CREATE INDEX IF NOT EXISTS tutor_messages_user_context_idx ON public.tutor_messages(user_id, context, created_at);

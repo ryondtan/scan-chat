@@ -296,6 +296,7 @@ export type Database = {
       tutor_messages: {
         Row: {
           content: string
+          context: string
           created_at: string
           id: string
           role: string
@@ -303,6 +304,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          context?: string
           created_at?: string
           id?: string
           role: string
@@ -310,6 +312,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          context?: string
           created_at?: string
           id?: string
           role?: string
