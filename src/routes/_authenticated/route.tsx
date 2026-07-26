@@ -68,6 +68,7 @@ function AuthenticatedLayout() {
           <main className="flex-1 min-w-0">
             <Outlet />
           </main>
+          <AskAIButton />
         </div>
       </div>
     </SidebarProvider>
