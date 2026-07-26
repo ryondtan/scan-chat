@@ -29,6 +29,7 @@ import {
   CalendarDays,
   FolderOpen,
 } from "lucide-react";
+import { AskAIButton } from "@/components/ask-ai";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
