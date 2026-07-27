@@ -1,140 +1,115 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { getFriends, deleteChat, type Profile } from "@/lib/chat-api";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { listConversations, type ConversationSummary } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Avatar, GroupAvatar } from "@/components/chat/avatar";
+import { MessageCircle, Plus, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/chats/")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Chats — Lumen" },
+      { name: "description", content: "Your private and group conversations." },
+    ],
+  }),
   component: ChatsPage,
 });
 
-type LastMsg = { content: string; created_at: string; from_me: boolean; unread: boolean };
-
 function ChatsPage() {
-  const { data: friends = [] } = useQuery({ queryKey: ["friends"], queryFn: getFriends });
-  const [lastByFriend, setLastByFriend] = useState<Record<string, LastMsg>>({});
+  const qc = useQueryClient();
+  const { data: conversations = [], isLoading } = useQuery({
+    queryKey: ["conversations"],
+    queryFn: listConversations,
+  });
 
   useEffect(() => {
-    let cancel = false;
-    (async () => {
-      const { data: userRes } = await supabase.auth.getUser();
-      const me = userRes.user?.id;
-      if (!me) return;
-      const { data } = await supabase
-        .from("messages").select("*")
-        .order("created_at", { ascending: false }).limit(500);
-      if (cancel || !data) return;
-      const map: Record<string, LastMsg> = {};
-      for (const m of data) {
-        const other = m.sender_id === me ? m.recipient_id : m.sender_id;
-        if (map[other]) continue;
-        map[other] = {
-          content: m.content,
-          created_at: m.created_at,
-          from_me: m.sender_id === me,
-          unread: m.sender_id !== me && !m.read_at,
-        };
-      }
-      setLastByFriend(map);
-    })();
-    return () => { cancel = true; };
-  }, [friends]);
-
-  useEffect(() => {
-    const ch = supabase.channel("chats-preview")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async (payload) => {
-        const { data: userRes } = await supabase.auth.getUser();
-        const me = userRes.user?.id;
-        if (!me) return;
-        const m = payload.new as { sender_id: string; recipient_id: string; content: string; created_at: string };
-        const other = m.sender_id === me ? m.recipient_id : m.sender_id;
-        setLastByFriend((prev) => ({
-          ...prev,
-          [other]: { content: m.content, created_at: m.created_at, from_me: m.sender_id === me, unread: m.sender_id !== me },
-        }));
-      }).subscribe();
+    const ch = supabase.channel("chats-list")
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
+        qc.invalidateQueries({ queryKey: ["conversations"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_members" }, () => {
+        qc.invalidateQueries({ queryKey: ["conversations"] });
+      })
+      .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, []);
+  }, [qc]);
 
   return (
     <div className="flex flex-col h-full">
-      <header className="px-5 py-4 border-b bg-card/50">
+      <header className="px-5 py-4 border-b bg-card/50 flex items-center justify-between sticky top-0 z-10">
         <h1 className="text-2xl font-bold">Chats</h1>
+        <Link to="/chats/new"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-primary text-primary-foreground font-medium">
+          <Plus className="w-4 h-4" /> New group
+        </Link>
       </header>
-      {friends.length === 0 ? (
+      {isLoading ? (
+        <div className="p-6 text-sm text-muted-foreground">Loading…</div>
+      ) : conversations.length === 0 ? (
         <EmptyState />
       ) : (
         <ul className="divide-y">
-          {friends.map((f) => (
-            <ChatRow
-              key={f.id}
-              friend={f}
-              last={lastByFriend[f.id]}
-              onDeleted={() => setLastByFriend((prev) => {
-                const next = { ...prev }; delete next[f.id]; return next;
-              })}
-            />
-          ))}
+          {conversations.map((c) => <ChatRow key={c.id} conv={c} />)}
         </ul>
       )}
     </div>
   );
 }
 
-function ChatRow({ friend, last, onDeleted }: { friend: Profile; last?: LastMsg; onDeleted: () => void }) {
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!confirm(`Delete chat with ${friend.display_name}?`)) return;
-    try {
-      await deleteChat(friend.id);
-      onDeleted();
-      toast.success("Chat deleted");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
-    }
-  };
+function ChatRow({ conv }: { conv: ConversationSummary }) {
+  const navigate = useNavigate();
+  const title = conv.type === "group" ? conv.name || "Untitled group" : conv.other?.display_name ?? "Chat";
+  const subtitle = conv.last_message
+    ? previewText(conv.last_message.content, conv.last_message.attachment_type, conv.last_message.attachment_name)
+    : conv.type === "group"
+      ? `${conv.members.length} members`
+      : conv.other ? `@${conv.other.username}` : "";
   return (
-    <li className="group relative">
-      <Link to="/chats/$friendId" params={{ friendId: friend.id }}
-        className="flex items-center gap-3 px-4 py-3 hover:bg-accent/40 transition">
-        <Avatar profile={friend} />
+    <li>
+      <button
+        onClick={() => navigate({ to: "/chats/$conversationId", params: { conversationId: conv.id } })}
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/40 text-left"
+      >
+        {conv.type === "group"
+          ? <GroupAvatar name={conv.name} />
+          : conv.other ? <Avatar profile={conv.other} /> : <GroupAvatar name="?" />}
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="font-semibold truncate">{friend.display_name}</span>
-            {last && <span className="text-xs text-muted-foreground shrink-0">{formatTime(last.created_at)}</span>}
+            <span className="font-semibold truncate flex items-center gap-1.5">
+              {conv.type === "group" && <Users className="w-3.5 h-3.5 text-muted-foreground" />}
+              {title}
+            </span>
+            {conv.last_message && (
+              <span className="text-xs text-muted-foreground shrink-0">
+                {formatTime(conv.last_message.created_at)}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            <p className="text-sm text-muted-foreground truncate flex-1">
-              {last ? (last.from_me ? "You: " : "") + last.content : `@${friend.username}`}
+            <p className={`text-sm truncate flex-1 ${conv.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+              {subtitle}
             </p>
-            {last?.unread && <span className="w-2 h-2 rounded-full bg-primary shrink-0" />}
+            {conv.unread > 0 && (
+              <span className="text-xs min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground grid place-items-center font-medium">
+                {conv.unread}
+              </span>
+            )}
           </div>
         </div>
-      </Link>
-      <button
-        type="button"
-        onClick={handleDelete}
-        aria-label="Delete chat"
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-md bg-card/80 text-muted-foreground hover:text-destructive hover:bg-accent opacity-0 group-hover:opacity-100 focus:opacity-100 transition"
-      >
-        <Trash2 className="w-4 h-4" />
       </button>
     </li>
   );
 }
 
-export function Avatar({ profile, size = 48 }: { profile: Profile; size?: number }) {
-  const initial = (profile.display_name || profile.username || "?")[0]?.toUpperCase();
-  return (
-    <div style={{ width: size, height: size }}
-      className="rounded-full bg-primary/15 text-primary font-semibold flex items-center justify-center shrink-0">
-      {initial}
-    </div>
-  );
+function previewText(content: string | null, attType: string | null, attName: string | null): string {
+  if (content) return content;
+  if (attType?.startsWith("image/")) return "📷 Photo";
+  if (attType?.startsWith("video/")) return "🎬 Video";
+  if (attType?.startsWith("audio/")) return "🎤 Audio";
+  if (attName) return `📎 ${attName}`;
+  return "";
 }
 
 function formatTime(iso: string) {
@@ -147,17 +122,22 @@ function formatTime(iso: string) {
 
 function EmptyState() {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+    <div className="flex-1 flex flex-col items-center justify-center px-6 text-center py-16">
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <MessageCircle className="w-8 h-8 text-muted-foreground" />
       </div>
       <h3 className="font-semibold text-lg">No chats yet</h3>
       <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-        Add a friend by scanning their QR code or entering their username.
+        Start a conversation by opening a friend's chat, or create a group.
       </p>
-      <Link to="/friends" className="mt-5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">
-        Add a friend
-      </Link>
+      <div className="flex gap-2 mt-5">
+        <Link to="/friends" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">
+          Friends
+        </Link>
+        <Link to="/chats/new" className="px-4 py-2 rounded-lg border text-sm font-medium">
+          New group
+        </Link>
+      </div>
     </div>
   );
 }

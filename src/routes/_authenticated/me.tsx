@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { getMyProfile, QR_PREFIX } from "@/lib/chat-api";
-import { Avatar } from "./chats.index";
+import { Avatar } from "@/components/chat/avatar";
 import { useSignOut } from "./route";
 import { LogOut, Copy } from "lucide-react";
 import { toast } from "sonner";

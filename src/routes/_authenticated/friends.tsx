@@ -5,8 +5,9 @@ import {
   getFriends, sendFriendRequest, QR_PREFIX,
   getIncomingRequests, getOutgoingRequests,
   acceptFriendRequest, declineFriendRequest, cancelFriendRequest,
+  ensureDirectConversation,
 } from "@/lib/chat-api";
-import { Avatar } from "./chats.index";
+import { Avatar } from "@/components/chat/avatar";
 import { toast } from "sonner";
 import { UserPlus, ScanLine, X, Check } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
@@ -34,17 +35,25 @@ function FriendsPage() {
     qc.invalidateQueries({ queryKey: ["friend-requests", "out"] });
   };
 
+  const openDirectChat = async (friendId: string) => {
+    try {
+      const cid = await ensureDirectConversation(friendId);
+      navigate({ to: "/chats/$conversationId", params: { conversationId: cid } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to open chat");
+    }
+  };
+
   const handleAdd = async (uname: string) => {
     setAdding(true);
     try {
       const friend = await sendFriendRequest(uname);
-      // Check if it was auto-accepted (they had sent us a request)
       const wasIncoming = incoming.some((r) => r.sender_id === friend.id);
       if (wasIncoming) {
         toast.success(`You're now friends with @${friend.username}`);
         refreshAll();
         setAddOpen(false); setUsername("");
-        navigate({ to: "/chats/$friendId", params: { friendId: friend.id } });
+        await openDirectChat(friend.id);
       } else {
         toast.success(`Request sent to @${friend.username}`);
         refreshAll();
@@ -148,7 +157,7 @@ function FriendsPage() {
           <ul className="divide-y">
             {friends.map((f) => (
               <li key={f.id}>
-                <button onClick={() => navigate({ to: "/chats/$friendId", params: { friendId: f.id } })}
+                <button onClick={() => openDirectChat(f.id)}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/40 text-left">
                   <Avatar profile={f} />
                   <div className="flex-1 min-w-0">
