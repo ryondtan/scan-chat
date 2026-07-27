@@ -164,31 +164,21 @@ export async function listConversations(): Promise<ConversationSummary[]> {
   if (rows.length === 0) return [];
   const cids = rows.map((r) => r.conversation_id);
 
-  const { data: allMembers } = await supabase
+  const { data: rawMembers } = await supabase
     .from("conversation_members")
-    .select("conversation_id, user_id, profile:profiles!conversation_members_user_id_fkey1(id, username, display_name, avatar_url)")
+    .select("conversation_id, user_id")
     .in("conversation_id", cids);
-
-  // Fall back if fk name differs
-  let membersRows = (allMembers ?? []) as unknown as { conversation_id: string; user_id: string; profile: Profile | null }[];
-  if (!membersRows.length || membersRows.every((m) => !m.profile)) {
-    const { data: raw } = await supabase
-      .from("conversation_members")
-      .select("conversation_id, user_id")
-      .in("conversation_id", cids);
-    const rawList = (raw ?? []) as { conversation_id: string; user_id: string }[];
-    const uids = Array.from(new Set(rawList.map((r) => r.user_id)));
-    const { data: profs } = await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", uids);
-    const pmap = new Map<string, Profile>();
-    (profs ?? []).forEach((p) => pmap.set(p.id, p as Profile));
-    membersRows = rawList.map((r) => ({ ...r, profile: pmap.get(r.user_id) ?? null }));
-  }
-
+  const memberRows = (rawMembers ?? []) as { conversation_id: string; user_id: string }[];
+  const uids = Array.from(new Set(memberRows.map((r) => r.user_id)));
+  const { data: profs } = await supabase.from("profiles").select("id, username, display_name, avatar_url").in("id", uids);
+  const pmap = new Map<string, Profile>();
+  (profs ?? []).forEach((p) => pmap.set(p.id, p as Profile));
   const membersByConv = new Map<string, Profile[]>();
-  membersRows.forEach((m) => {
-    if (!m.profile) return;
+  memberRows.forEach((m) => {
+    const p = pmap.get(m.user_id);
+    if (!p) return;
     const arr = membersByConv.get(m.conversation_id) ?? [];
-    arr.push(m.profile);
+    arr.push(p);
     membersByConv.set(m.conversation_id, arr);
   });
 
