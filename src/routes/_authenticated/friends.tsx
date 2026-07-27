@@ -5,8 +5,9 @@ import {
   getFriends, sendFriendRequest, QR_PREFIX,
   getIncomingRequests, getOutgoingRequests,
   acceptFriendRequest, declineFriendRequest, cancelFriendRequest,
+  ensureDirectConversation,
 } from "@/lib/chat-api";
-import { Avatar } from "./chats.index";
+import { Avatar } from "@/components/chat/avatar";
 import { toast } from "sonner";
 import { UserPlus, ScanLine, X, Check } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
