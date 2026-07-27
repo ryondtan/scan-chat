@@ -24,7 +24,6 @@ import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats.index'
 import { Route as AuthenticatedChatsFriendIdRouteImport } from './routes/_authenticated/chats.$friendId'
 
 const AuthRoute = AuthRouteImport.update({
@@ -101,11 +100,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
-  id: '/chats/',
-  path: '/chats/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedChatsFriendIdRoute =
   AuthenticatedChatsFriendIdRouteImport.update({
     id: '/chats/$friendId',
@@ -129,7 +123,6 @@ export interface FileRoutesByFullPath {
   '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
-  '/chats/': typeof AuthenticatedChatsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -147,7 +140,6 @@ export interface FileRoutesByTo {
   '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
-  '/chats': typeof AuthenticatedChatsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,7 +159,6 @@ export interface FileRoutesById {
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
-  '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -187,7 +178,6 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tutor'
     | '/chats/$friendId'
-    | '/chats/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -205,7 +195,6 @@ export interface FileRouteTypes {
     | '/teacher'
     | '/tutor'
     | '/chats/$friendId'
-    | '/chats'
   id:
     | '__root__'
     | '/'
@@ -224,7 +213,6 @@ export interface FileRouteTypes {
     | '/_authenticated/teacher'
     | '/_authenticated/tutor'
     | '/_authenticated/chats/$friendId'
-    | '/_authenticated/chats/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -340,13 +328,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/chats/': {
-      id: '/_authenticated/chats/'
-      path: '/chats'
-      fullPath: '/chats/'
-      preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/chats/$friendId': {
       id: '/_authenticated/chats/$friendId'
       path: '/chats/$friendId'
@@ -371,7 +352,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedChatsFriendIdRoute: typeof AuthenticatedChatsFriendIdRoute
-  AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -388,7 +368,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedChatsFriendIdRoute: AuthenticatedChatsFriendIdRoute,
-  AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
