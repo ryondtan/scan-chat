@@ -157,7 +157,7 @@ function FriendsPage() {
           <ul className="divide-y">
             {friends.map((f) => (
               <li key={f.id}>
-                <button onClick={() => navigate({ to: "/chats/$friendId", params: { friendId: f.id } })}
+                <button onClick={() => openDirectChat(f.id)}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/40 text-left">
                   <Avatar profile={f} />
                   <div className="flex-1 min-w-0">
