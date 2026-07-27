@@ -24,7 +24,6 @@ import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedChatsFriendIdRouteImport } from './routes/_authenticated/chats.$friendId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -100,12 +99,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedChatsFriendIdRoute =
-  AuthenticatedChatsFriendIdRouteImport.update({
-    id: '/chats/$friendId',
-    path: '/chats/$friendId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -122,7 +115,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor': typeof AuthenticatedTutorRoute
-  '/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -139,7 +131,6 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor': typeof AuthenticatedTutorRoute
-  '/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -158,7 +149,6 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
-  '/_authenticated/chats/$friendId': typeof AuthenticatedChatsFriendIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -177,7 +167,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/teacher'
     | '/tutor'
-    | '/chats/$friendId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -194,7 +183,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/teacher'
     | '/tutor'
-    | '/chats/$friendId'
   id:
     | '__root__'
     | '/'
@@ -212,7 +200,6 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/teacher'
     | '/_authenticated/tutor'
-    | '/_authenticated/chats/$friendId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -328,13 +315,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/chats/$friendId': {
-      id: '/_authenticated/chats/$friendId'
-      path: '/chats/$friendId'
-      fullPath: '/chats/$friendId'
-      preLoaderRoute: typeof AuthenticatedChatsFriendIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
@@ -351,7 +331,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
-  AuthenticatedChatsFriendIdRoute: typeof AuthenticatedChatsFriendIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -367,7 +346,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
-  AuthenticatedChatsFriendIdRoute: AuthenticatedChatsFriendIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
