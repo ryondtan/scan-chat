@@ -357,20 +357,18 @@ export type OutgoingMessage = {
 
 export async function sendMessage(conversationId: string, msg: OutgoingMessage) {
   const uid = await me();
-  const payload: Record<string, unknown> = {
+  const content = msg.content?.trim() || null;
+  if (!content && !msg.attachment) throw new Error("Empty message");
+  const { data, error } = await supabase.from("messages").insert({
     conversation_id: conversationId,
     sender_id: uid,
-    content: msg.content?.trim() || null,
-  };
-  if (msg.reply_to_id) payload.reply_to_id = msg.reply_to_id;
-  if (msg.attachment) {
-    payload.attachment_url = msg.attachment.url;
-    payload.attachment_type = msg.attachment.type;
-    payload.attachment_name = msg.attachment.name;
-    payload.attachment_size = msg.attachment.size;
-  }
-  if (!payload.content && !payload.attachment_url) throw new Error("Empty message");
-  const { data, error } = await supabase.from("messages").insert(payload).select().single();
+    content,
+    reply_to_id: msg.reply_to_id ?? null,
+    attachment_url: msg.attachment?.url ?? null,
+    attachment_type: msg.attachment?.type ?? null,
+    attachment_name: msg.attachment?.name ?? null,
+    attachment_size: msg.attachment?.size ?? null,
+  }).select().single();
   if (error) throw error;
   await supabase.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
   return data as Message;
