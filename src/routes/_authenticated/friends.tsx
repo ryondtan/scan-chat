@@ -35,17 +35,25 @@ function FriendsPage() {
     qc.invalidateQueries({ queryKey: ["friend-requests", "out"] });
   };
 
+  const openDirectChat = async (friendId: string) => {
+    try {
+      const cid = await ensureDirectConversation(friendId);
+      navigate({ to: "/chats/$conversationId", params: { conversationId: cid } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to open chat");
+    }
+  };
+
   const handleAdd = async (uname: string) => {
     setAdding(true);
     try {
       const friend = await sendFriendRequest(uname);
-      // Check if it was auto-accepted (they had sent us a request)
       const wasIncoming = incoming.some((r) => r.sender_id === friend.id);
       if (wasIncoming) {
         toast.success(`You're now friends with @${friend.username}`);
         refreshAll();
         setAddOpen(false); setUsername("");
-        navigate({ to: "/chats/$friendId", params: { friendId: friend.id } });
+        await openDirectChat(friend.id);
       } else {
         toast.success(`Request sent to @${friend.username}`);
         refreshAll();
