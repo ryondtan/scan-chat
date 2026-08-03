@@ -8,6 +8,7 @@ import {
   QUIZ_SYSTEM_PROMPT,
   FLASHCARD_SYSTEM_PROMPT,
 } from "@/lib/groups-helpers";
+import type { StudyGroup, GroupCard } from "@/lib/groups-types";
 
 /* ============================ GROUPS ============================ */
 
@@ -33,7 +34,7 @@ export const listMyGroups = createServerFn({ method: "GET" })
     return (memberships ?? [])
       .filter((m) => m.study_groups)
       .map((m) => ({
-        ...(m.study_groups as Record<string, unknown>),
+        ...(m.study_groups as unknown as StudyGroup),
         role: m.role,
         member_count: counts.get(m.group_id) ?? 1,
       }));
@@ -62,7 +63,7 @@ export const createGroup = createServerFn({ method: "POST" })
         .insert({ conversation_id: conv.id, user_id: context.userId, role: "owner" });
     }
 
-    let group = null as Record<string, unknown> | null;
+    let group: StudyGroup | null = null;
     let lastError = "Could not create group";
     for (let attempt = 0; attempt < 5 && !group; attempt++) {
       const { data: row, error } = await context.supabase
@@ -75,14 +76,14 @@ export const createGroup = createServerFn({ method: "POST" })
         })
         .select()
         .single();
-      if (row) group = row;
+      if (row) group = row as StudyGroup;
       else lastError = error?.message ?? lastError;
     }
     if (!group) throw new Error(lastError);
 
     const { error: mErr } = await context.supabase
       .from("study_group_members")
-      .insert({ group_id: group.id as string, user_id: context.userId, role: "owner" });
+      .insert({ group_id: group.id, user_id: context.userId, role: "owner" });
     if (mErr) throw new Error(mErr.message);
 
     return group;
@@ -170,7 +171,7 @@ export const updateGroup = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: { name?: string; description?: string | null; subject?: string | null } = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.description !== undefined) patch.description = data.description || null;
     if (data.subject !== undefined) patch.subject = data.subject || null;
@@ -564,8 +565,8 @@ export const listGroupDecks = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (decks ?? []).map((d) => {
-      const { group_cards, ...rest } = d as Record<string, unknown> & { group_cards?: unknown[] };
-      return { ...rest, cards: group_cards ?? [] };
+      const { group_cards, ...rest } = d as unknown as StudyGroupDeckRow;
+      return { ...rest, cards: (group_cards ?? []) as GroupCard[] };
     });
   });
 
@@ -826,3 +827,14 @@ export const getGroupProgress = createServerFn({ method: "GET" })
       },
     };
   });
+
+type StudyGroupDeckRow = {
+  id: string;
+  group_id: string;
+  created_by: string;
+  title: string;
+  subject: string | null;
+  created_at: string;
+  updated_at: string;
+  group_cards?: GroupCard[];
+};
