@@ -28,6 +28,7 @@ import {
   MessageCircle,
   CalendarDays,
   FolderOpen,
+  Users,
 } from "lucide-react";
 import { AskAIButton } from "@/components/ask-ai";
 
@@ -45,6 +46,7 @@ const nav = [
   { to: "/dashboard", label: "Dashboard", icon: Home },
   { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
   { to: "/chats", label: "Chats", icon: MessageCircle },
+  { to: "/groups", label: "Study Groups", icon: Users },
   { to: "/notes", label: "Notes", icon: StickyNote },
   { to: "/homework", label: "Homework", icon: BookOpen },
   { to: "/flashcards", label: "Flashcards", icon: Brain },
