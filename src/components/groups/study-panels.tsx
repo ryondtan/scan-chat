@@ -229,7 +229,7 @@ export function QuizzesPanel({ groupId }: { groupId: string }) {
 
   const reload = () =>
     listFn({ data: { groupId } })
-      .then((r) => setQuizzes(r as GroupQuiz[]))
+      .then((r) => setQuizzes(r as unknown as GroupQuiz[]))
       .catch(err)
       .finally(() => setLoading(false));
   useEffect(() => {
