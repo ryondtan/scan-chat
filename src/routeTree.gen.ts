@@ -13,7 +13,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
-import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedQuizRouteImport } from './routes/_authenticated/quiz'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
@@ -47,11 +46,6 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
   id: '/tutor',
   path: '/tutor',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
-  id: '/teacher',
-  path: '/teacher',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -146,7 +140,6 @@ export interface FileRoutesByFullPath {
   '/planner': typeof AuthenticatedPlannerRoute
   '/quiz': typeof AuthenticatedQuizRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/chats/$conversationId': typeof AuthenticatedChatsConversationIdRoute
   '/chats/new': typeof AuthenticatedChatsNewRoute
@@ -167,7 +160,6 @@ export interface FileRoutesByTo {
   '/planner': typeof AuthenticatedPlannerRoute
   '/quiz': typeof AuthenticatedQuizRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/teacher': typeof AuthenticatedTeacherRoute
   '/tutor': typeof AuthenticatedTutorRoute
   '/chats/$conversationId': typeof AuthenticatedChatsConversationIdRoute
   '/chats/new': typeof AuthenticatedChatsNewRoute
@@ -190,7 +182,6 @@ export interface FileRoutesById {
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/quiz': typeof AuthenticatedQuizRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/_authenticated/chats/$conversationId': typeof AuthenticatedChatsConversationIdRoute
   '/_authenticated/chats/new': typeof AuthenticatedChatsNewRoute
@@ -213,7 +204,6 @@ export interface FileRouteTypes {
     | '/planner'
     | '/quiz'
     | '/settings'
-    | '/teacher'
     | '/tutor'
     | '/chats/$conversationId'
     | '/chats/new'
@@ -234,7 +224,6 @@ export interface FileRouteTypes {
     | '/planner'
     | '/quiz'
     | '/settings'
-    | '/teacher'
     | '/tutor'
     | '/chats/$conversationId'
     | '/chats/new'
@@ -256,7 +245,6 @@ export interface FileRouteTypes {
     | '/_authenticated/planner'
     | '/_authenticated/quiz'
     | '/_authenticated/settings'
-    | '/_authenticated/teacher'
     | '/_authenticated/tutor'
     | '/_authenticated/chats/$conversationId'
     | '/_authenticated/chats/new'
@@ -299,13 +287,6 @@ declare module '@tanstack/react-router' {
       path: '/tutor'
       fullPath: '/tutor'
       preLoaderRoute: typeof AuthenticatedTutorRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/teacher': {
-      id: '/_authenticated/teacher'
-      path: '/teacher'
-      fullPath: '/teacher'
-      preLoaderRoute: typeof AuthenticatedTeacherRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -427,7 +408,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedQuizRoute: typeof AuthenticatedQuizRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedChatsConversationIdRoute: typeof AuthenticatedChatsConversationIdRoute
   AuthenticatedChatsNewRoute: typeof AuthenticatedChatsNewRoute
@@ -447,7 +427,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedQuizRoute: AuthenticatedQuizRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedChatsConversationIdRoute: AuthenticatedChatsConversationIdRoute,
   AuthenticatedChatsNewRoute: AuthenticatedChatsNewRoute,

@@ -48,7 +48,7 @@ function Landing() {
             Start learning <ArrowRight className="w-4 h-4" />
           </Link>
           <Link to="/auth" className="px-5 py-2.5 rounded-lg border font-medium hover:bg-accent">
-            I'm a teacher
+            Sign in
           </Link>
         </div>
       </section>
@@ -59,7 +59,7 @@ function Landing() {
           { icon: BookOpen, title: "Smart Notes", desc: "Organize notes and let AI summarize what matters." },
           { icon: Brain, title: "Flashcards", desc: "Turn any topic into spaced-repetition flashcards." },
           { icon: Sparkles, title: "Quiz Generator", desc: "Auto-generate quizzes from your notes or a topic." },
-          { icon: GraduationCap, title: "Teacher Dashboard", desc: "Create classes, assign work, and track progress." },
+          { icon: GraduationCap, title: "Study Groups", desc: "Share notes, files, tasks, and a group AI tutor." },
           { icon: ArrowRight, title: "Homework Help", desc: "Upload a problem and walk through it with AI." },
         ].map((f) => (
           <div key={f.title} className="rounded-xl border p-6 bg-card">
