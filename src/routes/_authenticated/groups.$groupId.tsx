@@ -56,6 +56,12 @@ function GroupDetailPage() {
 
   const [state, setState] = useState<null | { group: StudyGroup; members: GroupMember[]; myRole: string }>(null);
   const [tab, setTab] = useState<Tab>("Overview");
+  const [myId, setMyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setMyId(data.user?.id ?? null));
+  }, []);
+
 
   const load = useCallback(() => {
     getFn({ data: { groupId } })
