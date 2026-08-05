@@ -15,6 +15,8 @@ import {
   ProgressPanel,
   MembersPanel,
 } from "@/components/groups/study-panels";
+import { ChannelsPanel } from "@/components/groups/channels-panel";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/groups/$groupId")({
   ssr: false,
