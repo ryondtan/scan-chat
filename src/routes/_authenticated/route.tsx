@@ -22,7 +22,6 @@ import {
   StickyNote,
   Brain,
   Sparkles,
-  GraduationCap,
   Settings,
   LogOut,
   MessageCircle,
@@ -53,7 +52,7 @@ const nav = [
   { to: "/quiz", label: "Quiz", icon: Sparkles },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/files", label: "Files", icon: FolderOpen },
-  { to: "/teacher", label: "Teacher Workspace", icon: GraduationCap },
+  
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
