@@ -35,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/groups/$groupId")({
 
 const TABS = [
   "Overview",
+  "Channels",
   "Notes",
   "Files",
   "Tasks",
