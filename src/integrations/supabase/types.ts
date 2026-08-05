@@ -225,6 +225,57 @@ export type Database = {
           },
         ]
       }
+      group_channels: {
+        Row: {
+          created_at: string
+          created_by: string
+          group_id: string
+          id: string
+          name: string
+          position: number
+          topic: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          group_id: string
+          id?: string
+          name: string
+          position?: number
+          topic?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          group_id?: string
+          id?: string
+          name?: string
+          position?: number
+          topic?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_channels_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_channels_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_decks: {
         Row: {
           created_at: string
@@ -666,6 +717,7 @@ export type Database = {
           attachment_size: number | null
           attachment_type: string | null
           attachment_url: string | null
+          channel_id: string | null
           content: string | null
           conversation_id: string | null
           created_at: string
@@ -682,6 +734,7 @@ export type Database = {
           attachment_size?: number | null
           attachment_type?: string | null
           attachment_url?: string | null
+          channel_id?: string | null
           content?: string | null
           conversation_id?: string | null
           created_at?: string
@@ -698,6 +751,7 @@ export type Database = {
           attachment_size?: number | null
           attachment_type?: string | null
           attachment_url?: string | null
+          channel_id?: string | null
           content?: string | null
           conversation_id?: string | null
           created_at?: string
@@ -710,6 +764,13 @@ export type Database = {
           sender_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "group_channels"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_conversation_id_fkey"
             columns: ["conversation_id"]
@@ -1061,6 +1122,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      channel_group_id: { Args: { _channel_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

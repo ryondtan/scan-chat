@@ -15,6 +15,8 @@ import {
   ProgressPanel,
   MembersPanel,
 } from "@/components/groups/study-panels";
+import { ChannelsPanel } from "@/components/groups/channels-panel";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/groups/$groupId")({
   ssr: false,
@@ -33,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/groups/$groupId")({
 
 const TABS = [
   "Overview",
+  "Channels",
   "Notes",
   "Files",
   "Tasks",
@@ -53,6 +56,12 @@ function GroupDetailPage() {
 
   const [state, setState] = useState<null | { group: StudyGroup; members: GroupMember[]; myRole: string }>(null);
   const [tab, setTab] = useState<Tab>("Overview");
+  const [myId, setMyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setMyId(data.user?.id ?? null));
+  }, []);
+
 
   const load = useCallback(() => {
     getFn({ data: { groupId } })
@@ -140,6 +149,9 @@ function GroupDetailPage() {
           <ProgressPanel groupId={groupId} />
         </div>
       )}
+      {tab === "Channels" && (myId
+        ? <ChannelsPanel groupId={groupId} members={members} isAdmin={isAdmin} myId={myId} />
+        : <Loading />)}
       {tab === "Notes" && <NotesPanel groupId={groupId} />}
       {tab === "Files" && <FilesPanel groupId={groupId} />}
       {tab === "Tasks" && <TasksPanel groupId={groupId} members={members} />}
