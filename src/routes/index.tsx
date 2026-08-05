@@ -4,7 +4,7 @@ import { Brain, Sparkles, BookOpen, GraduationCap, MessagesSquare, ArrowRight } 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lumen — AI Learning Platform for Students & Teachers" },
+      { title: "Lumen — AI Learning Workspace for Students" },
       { name: "description", content: "Study smarter with an AI tutor, homework help, notes, flashcards, and auto-generated quizzes. Built for students." },
       { property: "og:title", content: "Lumen — AI Learning Platform" },
       { property: "og:description", content: "AI tutor, homework help, notes, flashcards, and quizzes in one clean workspace." },
