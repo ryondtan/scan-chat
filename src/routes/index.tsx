@@ -5,7 +5,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Lumen — AI Learning Platform for Students & Teachers" },
-      { name: "description", content: "Study smarter with an AI tutor, homework help, notes, flashcards, and auto-generated quizzes. Built for students and teachers." },
+      { name: "description", content: "Study smarter with an AI tutor, homework help, notes, flashcards, and auto-generated quizzes. Built for students." },
       { property: "og:title", content: "Lumen — AI Learning Platform" },
       { property: "og:description", content: "AI tutor, homework help, notes, flashcards, and quizzes in one clean workspace." },
       { property: "og:type", content: "website" },
@@ -38,7 +38,7 @@ function Landing() {
           <Sparkles className="w-3 h-3" /> AI-powered learning
         </div>
         <h1 className="text-4xl sm:text-6xl font-bold tracking-tight max-w-3xl mx-auto">
-          The AI workspace for students and teachers
+          The AI workspace for students
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
           Chat with an AI tutor, get homework help, take notes, generate flashcards, and build quizzes — all in one clean, focused workspace.

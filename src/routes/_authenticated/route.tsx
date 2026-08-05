@@ -22,7 +22,6 @@ import {
   StickyNote,
   Brain,
   Sparkles,
-  GraduationCap,
   Settings,
   LogOut,
   MessageCircle,
