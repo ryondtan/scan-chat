@@ -149,6 +149,9 @@ function GroupDetailPage() {
           <ProgressPanel groupId={groupId} />
         </div>
       )}
+      {tab === "Channels" && (myId
+        ? <ChannelsPanel groupId={groupId} members={members} isAdmin={isAdmin} myId={myId} />
+        : <Loading />)}
       {tab === "Notes" && <NotesPanel groupId={groupId} />}
       {tab === "Files" && <FilesPanel groupId={groupId} />}
       {tab === "Tasks" && <TasksPanel groupId={groupId} members={members} />}
