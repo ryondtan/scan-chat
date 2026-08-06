@@ -75,7 +75,7 @@ function Dashboard() {
             ))}
           </Card>
 
-          <Card icon={BookOpen} title="Due today" to="/homework" empty="You're all caught up!">
+          <Card icon={BookOpen} title="Due today" to="/planner" empty="You're all caught up!">
             {data?.dueToday.map((h: any) => (
               <li key={h.id} className="py-1.5 text-sm truncate">• {h.title}{h.subject ? ` · ${h.subject}` : ""}</li>
             ))}

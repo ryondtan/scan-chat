@@ -16,6 +16,7 @@ import {
   type Channel,
 } from "@/lib/channels-api";
 import type { GroupMember } from "@/lib/groups-types";
+import { VoiceRoom } from "@/components/groups/voice-room";
 import {
   Hash,
   Volume2,
@@ -146,7 +147,7 @@ export function ChannelsPanel({
         {results ? (
           <SearchResults results={results} channels={channels ?? []} onClose={() => { setResults(null); setQuery(""); }} />
         ) : active?.type === "voice" ? (
-          <VoicePlaceholder name={active.name} />
+          <VoiceRoom key={active.id} channelId={active.id} channelName={active.name} myId={myId} />
         ) : active ? (
           <ChannelChat key={active.id} channel={active} myId={myId} members={members} presence={presence} />
         ) : (
@@ -260,22 +261,6 @@ function ChannelSidebar({
         </>
       )}
     </aside>
-  );
-}
-
-function VoicePlaceholder({ name }: { name: string }) {
-  return (
-    <div className="flex-1 grid place-items-center text-center px-6">
-      <div>
-        <div className="w-12 h-12 rounded-full bg-accent grid place-items-center mx-auto mb-3">
-          <Volume2 className="w-6 h-6 text-accent-foreground" />
-        </div>
-        <p className="font-medium">{name}</p>
-        <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-          Live voice, screen sharing and shared music for this room are being wired up next.
-        </p>
-      </div>
-    </div>
   );
 }
 

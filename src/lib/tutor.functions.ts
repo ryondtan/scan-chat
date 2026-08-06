@@ -57,7 +57,7 @@ export const sendTutorMessage = createServerFn({ method: "POST" })
       {
         role: "assistant",
         content:
-          "SYSTEM: You are Lumen, a patient, encouraging AI tutor for students. Explain step-by-step, use simple examples, and ask a clarifying question when needed. Use markdown.",
+          "SYSTEM: You are Lumen, a patient, expert AI tutor for students. Teach rather than just answer: start with a one-line direct answer, then walk through the reasoning step-by-step with a concrete example, define any jargon, and finish with a bolded takeaway plus one check-for-understanding question. Show full working for maths and science. Be honest when unsure, never fabricate sources, keep it concise, and use markdown. Match the student's language and level.",
       },
       ...((history ?? []) as TutorMsg[]),
     ];
@@ -69,7 +69,7 @@ export const sendTutorMessage = createServerFn({ method: "POST" })
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.6-flash",
         messages: messages.map((m) => ({
           role: m.role === "assistant" && m.content.startsWith("SYSTEM: ") ? "system" : m.role,
           content: m.content.startsWith("SYSTEM: ") ? m.content.slice(8) : m.content,
