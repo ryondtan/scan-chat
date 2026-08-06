@@ -3,18 +3,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { PageShell } from "@/lib/page-shell";
-import { GroupAvatar } from "@/components/chat/avatar";
 import { MessageCircle, LogOut, Trash2 } from "lucide-react";
 import { getGroup, leaveGroup, deleteGroup } from "@/lib/groups.functions";
 import type { GroupMember, StudyGroup } from "@/lib/groups-types";
-import { NotesPanel, FilesPanel, TasksPanel, PlannerPanel, Loading } from "@/components/groups/content-panels";
-import {
-  FlashcardsPanel,
-  QuizzesPanel,
-  GroupAiPanel,
-  ProgressPanel,
-  MembersPanel,
-} from "@/components/groups/study-panels";
+import { Loading } from "@/components/groups/content-panels";
+import { MembersPanel } from "@/components/groups/study-panels";
 import { ChannelsPanel } from "@/components/groups/channels-panel";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,9 +16,9 @@ export const Route = createFileRoute("/_authenticated/groups/$groupId")({
   head: () => ({
     meta: [
       { title: "Study Group — Lumen" },
-      { name: "description", content: "Shared notes, files, tasks, planner, flashcards, quizzes, AI and progress for your study group." },
+      { name: "description", content: "Group channels, voice rooms and chat for your study group." },
       { property: "og:title", content: "Study Group — Lumen" },
-      { property: "og:description", content: "Everything your study group shares, in one workspace." },
+      { property: "og:description", content: "Text and voice channels for your study group." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -124,7 +117,7 @@ function GroupDetailPage() {
         ))}
       </div>
 
-            {tab === "Channels" && (myId
+      {tab === "Channels" && (myId
         ? <ChannelsPanel groupId={groupId} members={members} isAdmin={isAdmin} myId={myId} />
         : <Loading />)}
       {tab === "Members" && (
