@@ -33,18 +33,7 @@ export const Route = createFileRoute("/_authenticated/groups/$groupId")({
   component: GroupDetailPage,
 });
 
-const TABS = [
-  "Overview",
-  "Channels",
-  "Notes",
-  "Files",
-  "Tasks",
-  "Planner",
-  "Flashcards",
-  "Quizzes",
-  "Group AI",
-  "Members",
-] as const;
+const TABS = ["Channels", "Members"] as const;
 type Tab = (typeof TABS)[number];
 
 function GroupDetailPage() {
@@ -55,7 +44,7 @@ function GroupDetailPage() {
   const delFn = useServerFn(deleteGroup);
 
   const [state, setState] = useState<null | { group: StudyGroup; members: GroupMember[]; myRole: string }>(null);
-  const [tab, setTab] = useState<Tab>("Overview");
+  const [tab, setTab] = useState<Tab>("Channels");
   const [myId, setMyId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -135,30 +124,9 @@ function GroupDetailPage() {
         ))}
       </div>
 
-      {tab === "Overview" && (
-        <div className="space-y-4">
-          <div className="rounded-xl border bg-card p-4 flex items-center gap-3">
-            <GroupAvatar name={group.name} size={44} />
-            <div className="min-w-0">
-              <div className="font-medium truncate">{group.name}</div>
-              <div className="text-xs text-muted-foreground">
-                Join code <span className="font-mono tracking-widest">{group.join_code}</span>
-              </div>
-            </div>
-          </div>
-          <ProgressPanel groupId={groupId} />
-        </div>
-      )}
-      {tab === "Channels" && (myId
+            {tab === "Channels" && (myId
         ? <ChannelsPanel groupId={groupId} members={members} isAdmin={isAdmin} myId={myId} />
         : <Loading />)}
-      {tab === "Notes" && <NotesPanel groupId={groupId} />}
-      {tab === "Files" && <FilesPanel groupId={groupId} />}
-      {tab === "Tasks" && <TasksPanel groupId={groupId} members={members} />}
-      {tab === "Planner" && <PlannerPanel groupId={groupId} />}
-      {tab === "Flashcards" && <FlashcardsPanel groupId={groupId} />}
-      {tab === "Quizzes" && <QuizzesPanel groupId={groupId} />}
-      {tab === "Group AI" && <GroupAiPanel groupId={groupId} members={members} />}
       {tab === "Members" && (
         <MembersPanel
           groupId={groupId}

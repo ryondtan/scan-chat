@@ -19,6 +19,7 @@ import type { GroupMember } from "@/lib/groups-types";
 import { VoiceRoom } from "@/components/groups/voice-room";
 import {
   Hash,
+  Volume2,
   Plus,
   Send,
   Paperclip,

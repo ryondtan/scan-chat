@@ -18,7 +18,6 @@ import { Route as AuthenticatedQuizRouteImport } from './routes/_authenticated/q
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
-import { Route as AuthenticatedHomeworkRouteImport } from './routes/_authenticated/homework'
 import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedFlashcardsRouteImport } from './routes/_authenticated/flashcards'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
@@ -71,11 +70,6 @@ const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
 const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   id: '/me',
   path: '/me',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedHomeworkRoute = AuthenticatedHomeworkRouteImport.update({
-  id: '/homework',
-  path: '/homework',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFriendsRoute = AuthenticatedFriendsRouteImport.update({
@@ -134,7 +128,6 @@ export interface FileRoutesByFullPath {
   '/files': typeof AuthenticatedFilesRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
-  '/homework': typeof AuthenticatedHomeworkRoute
   '/me': typeof AuthenticatedMeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/planner': typeof AuthenticatedPlannerRoute
@@ -154,7 +147,6 @@ export interface FileRoutesByTo {
   '/files': typeof AuthenticatedFilesRoute
   '/flashcards': typeof AuthenticatedFlashcardsRoute
   '/friends': typeof AuthenticatedFriendsRoute
-  '/homework': typeof AuthenticatedHomeworkRoute
   '/me': typeof AuthenticatedMeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/planner': typeof AuthenticatedPlannerRoute
@@ -176,7 +168,6 @@ export interface FileRoutesById {
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/flashcards': typeof AuthenticatedFlashcardsRoute
   '/_authenticated/friends': typeof AuthenticatedFriendsRoute
-  '/_authenticated/homework': typeof AuthenticatedHomeworkRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
@@ -198,7 +189,6 @@ export interface FileRouteTypes {
     | '/files'
     | '/flashcards'
     | '/friends'
-    | '/homework'
     | '/me'
     | '/notes'
     | '/planner'
@@ -218,7 +208,6 @@ export interface FileRouteTypes {
     | '/files'
     | '/flashcards'
     | '/friends'
-    | '/homework'
     | '/me'
     | '/notes'
     | '/planner'
@@ -239,7 +228,6 @@ export interface FileRouteTypes {
     | '/_authenticated/files'
     | '/_authenticated/flashcards'
     | '/_authenticated/friends'
-    | '/_authenticated/homework'
     | '/_authenticated/me'
     | '/_authenticated/notes'
     | '/_authenticated/planner'
@@ -324,13 +312,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/homework': {
-      id: '/_authenticated/homework'
-      path: '/homework'
-      fullPath: '/homework'
-      preLoaderRoute: typeof AuthenticatedHomeworkRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/friends': {
       id: '/_authenticated/friends'
       path: '/friends'
@@ -402,7 +383,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedFlashcardsRoute: typeof AuthenticatedFlashcardsRoute
   AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
-  AuthenticatedHomeworkRoute: typeof AuthenticatedHomeworkRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
@@ -421,7 +401,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedFlashcardsRoute: AuthenticatedFlashcardsRoute,
   AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
-  AuthenticatedHomeworkRoute: AuthenticatedHomeworkRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
@@ -446,13 +425,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
