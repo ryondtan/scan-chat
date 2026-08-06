@@ -5,9 +5,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Lumen — AI Learning Workspace for Students" },
-      { name: "description", content: "Study smarter with an AI tutor, homework help, notes, flashcards, and auto-generated quizzes. Built for students." },
+      { name: "description", content: "Study smarter with an AI tutor, notes, flashcards, and auto-generated quizzes. Built for students." },
       { property: "og:title", content: "Lumen — AI Learning Platform" },
-      { property: "og:description", content: "AI tutor, homework help, notes, flashcards, and quizzes in one clean workspace." },
+      { property: "og:description", content: "AI tutor, notes, flashcards, and quizzes in one clean workspace." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -41,7 +41,7 @@ function Landing() {
           The AI workspace for students
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Chat with an AI tutor, get homework help, take notes, generate flashcards, and build quizzes — all in one clean, focused workspace.
+          Chat with an AI tutor, take notes, generate flashcards, and build quizzes — all in one clean, focused workspace.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Link to="/auth" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90">
@@ -60,7 +60,7 @@ function Landing() {
           { icon: Brain, title: "Flashcards", desc: "Turn any topic into spaced-repetition flashcards." },
           { icon: Sparkles, title: "Quiz Generator", desc: "Auto-generate quizzes from your notes or a topic." },
           { icon: GraduationCap, title: "Study Groups", desc: "Share notes, files, tasks, and a group AI tutor." },
-          { icon: ArrowRight, title: "Homework Help", desc: "Upload a problem and walk through it with AI." },
+          { icon: ArrowRight, title: "Voice Channels", desc: "Talk, share your screen and study live with your group." },
         ].map((f) => (
           <div key={f.title} className="rounded-xl border p-6 bg-card">
             <div className="w-10 h-10 rounded-lg bg-accent grid place-items-center mb-4">
