@@ -146,7 +146,7 @@ export function ChannelsPanel({
         {results ? (
           <SearchResults results={results} channels={channels ?? []} onClose={() => { setResults(null); setQuery(""); }} />
         ) : active?.type === "voice" ? (
-          <VoicePlaceholder name={active.name} />
+          <VoiceRoom key={active.id} channelId={active.id} channelName={active.name} myId={myId} />
         ) : active ? (
           <ChannelChat key={active.id} channel={active} myId={myId} members={members} presence={presence} />
         ) : (
