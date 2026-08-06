@@ -69,7 +69,7 @@ export const sendTutorMessage = createServerFn({ method: "POST" })
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.6-flash",
         messages: messages.map((m) => ({
           role: m.role === "assistant" && m.content.startsWith("SYSTEM: ") ? "system" : m.role,
           content: m.content.startsWith("SYSTEM: ") ? m.content.slice(8) : m.content,
