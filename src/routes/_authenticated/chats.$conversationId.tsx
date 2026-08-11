@@ -404,26 +404,55 @@ function ConversationPage() {
         </div>
       )}
 
-      <form onSubmit={send} className="flex items-end gap-2 p-3 border-t bg-card">
+      <form onSubmit={send} className="flex items-end gap-1.5 p-3 border-t bg-card">
         <input ref={fileRef} type="file" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
-        <button type="button" onClick={() => fileRef.current?.click()}
-          className="p-2.5 rounded-full hover:bg-accent text-muted-foreground" aria-label="Attach">
-          <Paperclip className="w-5 h-5" />
-        </button>
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={(e) => { setInput(e.target.value); broadcastTyping(); }}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          rows={1}
-          placeholder="Type a message"
-          className="flex-1 resize-none max-h-32 px-4 py-2.5 rounded-2xl bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-        <button type="submit" disabled={!input.trim() || sending}
-          className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40">
-          <Send className="w-4 h-4" />
-        </button>
+        <input ref={mediaRef} type="file" accept="image/*,video/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+
+        {recording ? (
+          <div className="flex-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-muted text-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
+            <span className="flex-1">Recording… {String(Math.floor(recSecs / 60)).padStart(2, "0")}:{String(recSecs % 60).padStart(2, "0")}</span>
+            <button type="button" onClick={cancelRecording} className="text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+            <button type="button" onClick={stopRecording}
+              className="w-9 h-9 rounded-full bg-primary text-primary-foreground grid place-items-center" aria-label="Send voice">
+              <Square className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <button type="button" onClick={() => mediaRef.current?.click()}
+              className="p-2.5 rounded-full hover:bg-accent text-muted-foreground" aria-label="Photo or video">
+              <ImageIcon className="w-5 h-5" />
+            </button>
+            <button type="button" onClick={() => fileRef.current?.click()}
+              className="p-2.5 rounded-full hover:bg-accent text-muted-foreground" aria-label="Attach file">
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => { setInput(e.target.value); broadcastTyping(); }}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+              rows={1}
+              placeholder="Type a message"
+              className="flex-1 resize-none max-h-32 px-4 py-2.5 rounded-2xl bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            {input.trim() ? (
+              <button type="submit" disabled={sending}
+                className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40">
+                <Send className="w-4 h-4" />
+              </button>
+            ) : (
+              <button type="button" onClick={startRecording} disabled={sending}
+                className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40"
+                aria-label="Record voice message">
+                <Mic className="w-4 h-4" />
+              </button>
+            )}
+          </>
+        )}
       </form>
 
       {forwardFor && <ForwardDialog message={forwardFor} currentConversationId={conversationId} onClose={() => setForwardFor(null)} />}
