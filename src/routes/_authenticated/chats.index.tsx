@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { listConversations, type ConversationSummary } from "@/lib/chat-api";
+import { useEffect, useState } from "react";
+import { listConversations, deleteConversation, leaveConversation, type ConversationSummary } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, GroupAvatar } from "@/components/chat/avatar";
-import { MessageCircle, Plus, Users } from "lucide-react";
+import { MessageCircle, Plus, Users, MoreVertical, Trash2, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chats/")({
   ssr: false,
@@ -60,17 +61,35 @@ function ChatsPage() {
 
 function ChatRow({ conv }: { conv: ConversationSummary }) {
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [menu, setMenu] = useState(false);
+  const [busy, setBusy] = useState(false);
   const title = conv.type === "group" ? conv.name || "Untitled group" : conv.other?.display_name ?? "Chat";
   const subtitle = conv.last_message
     ? previewText(conv.last_message.content, conv.last_message.attachment_type, conv.last_message.attachment_name)
     : conv.type === "group"
       ? `${conv.members.length} members`
       : conv.other ? `@${conv.other.username}` : "";
+
+  const run = async (fn: () => Promise<void>, msg: string) => {
+    setBusy(true);
+    try {
+      await fn();
+      toast.success(msg);
+      qc.invalidateQueries({ queryKey: ["conversations"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setBusy(false);
+      setMenu(false);
+    }
+  };
+
   return (
-    <li>
+    <li className="relative flex items-center">
       <button
         onClick={() => navigate({ to: "/chats/$conversationId", params: { conversationId: conv.id } })}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/40 text-left"
+        className="flex-1 min-w-0 flex items-center gap-3 px-4 py-3 hover:bg-accent/40 text-left"
       >
         {conv.type === "group"
           ? <GroupAvatar name={conv.name} />
@@ -99,6 +118,44 @@ function ChatRow({ conv }: { conv: ConversationSummary }) {
           </div>
         </div>
       </button>
+
+      <button
+        onClick={(e) => { e.stopPropagation(); setMenu((v) => !v); }}
+        className="p-2 mr-2 rounded-md hover:bg-accent text-muted-foreground"
+        aria-label="Chat options"
+      >
+        <MoreVertical className="w-4 h-4" />
+      </button>
+
+      {menu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenu(false)} />
+          <div className="absolute right-3 top-12 z-50 w-44 bg-popover border rounded-lg shadow-lg py-1 text-sm">
+            {conv.type === "group" && (
+              <button
+                disabled={busy}
+                onClick={() => {
+                  if (!confirm("Leave this group?")) return;
+                  run(() => leaveConversation(conv.id), "Left group");
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-accent flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" /> Leave group
+              </button>
+            )}
+            <button
+              disabled={busy}
+              onClick={() => {
+                if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+                run(() => deleteConversation(conv.id), "Chat deleted");
+              }}
+              className="w-full text-left px-3 py-2 hover:bg-accent flex items-center gap-2 text-destructive"
+            >
+              <Trash2 className="w-4 h-4" /> Delete chat
+            </button>
+          </div>
+        </>
+      )}
     </li>
   );
 }

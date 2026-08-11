@@ -10,8 +10,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, GroupAvatar } from "@/components/chat/avatar";
 import {
-  ArrowLeft, Send, Trash2, Paperclip, Search, X, Pin, Smile,
-  Reply as ReplyIcon, Forward, Users, MoreVertical, Download, LogOut,
+  ArrowLeft, Send, Trash2, Paperclip, Search, X, Pin, Image as ImageIcon,
+  Reply as ReplyIcon, Forward, Users, MoreVertical, Download, LogOut, Mic, Square,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,9 +39,14 @@ function ConversationPage() {
   const [forwardFor, setForwardFor] = useState<Message | null>(null);
   const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
   const [typingIds, setTypingIds] = useState<Set<string>>(new Set());
+  const [recording, setRecording] = useState(false);
+  const [recSecs, setRecSecs] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const mediaRef = useRef<HTMLInputElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingSentAt = useRef(0);
 
@@ -167,6 +172,59 @@ function ConversationPage() {
       setSending(false);
     }
   };
+
+  const startRecording = async () => {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      const chunks: BlobPart[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null; }
+        setRecording(false);
+        setRecSecs(0);
+        const type = rec.mimeType || "audio/webm";
+        const blob = new Blob(chunks, { type });
+        if (blob.size < 1000) return;
+        const ext = type.includes("mp4") ? "m4a" : "webm";
+        await handleFile(new File([blob], `voice-${Date.now()}.${ext}`, { type }));
+      };
+      recorderRef.current = rec;
+      rec.start();
+      setRecording(true);
+      setRecSecs(0);
+      recTimerRef.current = setInterval(() => {
+        setRecSecs((s) => {
+          if (s >= 120) { stopRecording(); return s; }
+          return s + 1;
+        });
+      }, 1000);
+    } catch {
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    recorderRef.current?.state === "recording" && recorderRef.current.stop();
+  };
+
+  const cancelRecording = () => {
+    const rec = recorderRef.current;
+    if (!rec) return;
+    rec.onstop = null;
+    if (rec.state === "recording") rec.stop();
+    rec.stream.getTracks().forEach((t) => t.stop());
+    if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null; }
+    setRecording(false);
+    setRecSecs(0);
+  };
+
+  useEffect(() => () => { if (recTimerRef.current) clearInterval(recTimerRef.current); }, []);
+
+
 
   const broadcastTyping = () => {
     if (!me || !typingChannelRef.current) return;
@@ -346,26 +404,55 @@ function ConversationPage() {
         </div>
       )}
 
-      <form onSubmit={send} className="flex items-end gap-2 p-3 border-t bg-card">
+      <form onSubmit={send} className="flex items-end gap-1.5 p-3 border-t bg-card">
         <input ref={fileRef} type="file" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
-        <button type="button" onClick={() => fileRef.current?.click()}
-          className="p-2.5 rounded-full hover:bg-accent text-muted-foreground" aria-label="Attach">
-          <Paperclip className="w-5 h-5" />
-        </button>
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={(e) => { setInput(e.target.value); broadcastTyping(); }}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          rows={1}
-          placeholder="Type a message"
-          className="flex-1 resize-none max-h-32 px-4 py-2.5 rounded-2xl bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-        <button type="submit" disabled={!input.trim() || sending}
-          className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40">
-          <Send className="w-4 h-4" />
-        </button>
+        <input ref={mediaRef} type="file" accept="image/*,video/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+
+        {recording ? (
+          <div className="flex-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-muted text-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
+            <span className="flex-1">Recording… {String(Math.floor(recSecs / 60)).padStart(2, "0")}:{String(recSecs % 60).padStart(2, "0")}</span>
+            <button type="button" onClick={cancelRecording} className="text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+            <button type="button" onClick={stopRecording}
+              className="w-9 h-9 rounded-full bg-primary text-primary-foreground grid place-items-center" aria-label="Send voice">
+              <Square className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <button type="button" onClick={() => mediaRef.current?.click()}
+              className="p-2.5 rounded-full hover:bg-accent text-muted-foreground" aria-label="Photo or video">
+              <ImageIcon className="w-5 h-5" />
+            </button>
+            <button type="button" onClick={() => fileRef.current?.click()}
+              className="p-2.5 rounded-full hover:bg-accent text-muted-foreground" aria-label="Attach file">
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => { setInput(e.target.value); broadcastTyping(); }}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+              rows={1}
+              placeholder="Type a message"
+              className="flex-1 resize-none max-h-32 px-4 py-2.5 rounded-2xl bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            {input.trim() ? (
+              <button type="submit" disabled={sending}
+                className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40">
+                <Send className="w-4 h-4" />
+              </button>
+            ) : (
+              <button type="button" onClick={startRecording} disabled={sending}
+                className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40"
+                aria-label="Record voice message">
+                <Mic className="w-4 h-4" />
+              </button>
+            )}
+          </>
+        )}
       </form>
 
       {forwardFor && <ForwardDialog message={forwardFor} currentConversationId={conversationId} onClose={() => setForwardFor(null)} />}
@@ -400,11 +487,9 @@ function MessageBubble({
         <div className="relative">
           <div
             onClick={onActivate}
-            className="cursor-pointer rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm relative"
-            style={{
-              backgroundColor: mine ? "hsl(var(--primary))" : "hsl(var(--muted))",
-              color: mine ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
-            }}
+            className={`cursor-pointer rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm relative ${
+              mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+            }`}
           >
             {m.pinned_at && (
               <Pin className={`absolute -top-1.5 ${mine ? "-left-1.5" : "-right-1.5"} w-3.5 h-3.5 text-primary bg-background rounded-full p-0.5`} />

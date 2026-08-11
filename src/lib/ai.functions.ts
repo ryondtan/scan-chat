@@ -28,11 +28,17 @@ async function callGemini(
   apiKey: string,
   messages: Array<{ role: "system" | "user" | "assistant"; content: unknown }>,
 ) {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: "google/gemini-3.6-flash", messages }),
-  });
+  let res: Response;
+  try {
+    res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: "google/gemini-3.6-flash", messages }),
+      signal: AbortSignal.timeout(90_000),
+    });
+  } catch {
+    throw new Error("The AI took too long to respond. Please try again.");
+  }
   if (!res.ok) {
     const body = await res.text();
     if (res.status === 429) throw new Error("Rate limit reached. Try again shortly.");
@@ -41,7 +47,7 @@ async function callGemini(
   }
   const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   const out = json.choices?.[0]?.message?.content?.trim();
-  if (!out) throw new Error("Empty AI response");
+  if (!out) throw new Error("The AI returned an empty answer. Try rephrasing your request.");
   return out;
 }
 
@@ -77,7 +83,7 @@ export const askAssistant = createServerFn({ method: "POST" })
       systemPrompt += ` Target language: ${data.targetLanguage}.`;
     }
 
-    // Load prior chat turns for conversational modes
+    // Load the most recent chat turns for conversational modes
     const history: ChatTurn[] =
       data.mode === "chat"
         ? (
@@ -86,9 +92,12 @@ export const askAssistant = createServerFn({ method: "POST" })
               .select("role, content")
               .eq("user_id", context.userId)
               .eq("context", data.context)
-              .order("created_at", { ascending: true })
-              .limit(30)).data ?? []
-          ).map((r) => ({ role: r.role as "user" | "assistant", content: r.content }))
+              .order("created_at", { ascending: false })
+              .limit(20)).data ?? []
+          )
+            .map((r) => ({ role: r.role as "user" | "assistant", content: r.content }))
+            .filter((r) => r.role === "user" || r.role === "assistant")
+            .reverse()
         : [];
 
     // Build user content — optionally include a document attachment
