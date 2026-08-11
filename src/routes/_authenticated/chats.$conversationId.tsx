@@ -39,9 +39,14 @@ function ConversationPage() {
   const [forwardFor, setForwardFor] = useState<Message | null>(null);
   const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
   const [typingIds, setTypingIds] = useState<Set<string>>(new Set());
+  const [recording, setRecording] = useState(false);
+  const [recSecs, setRecSecs] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const mediaRef = useRef<HTMLInputElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingSentAt = useRef(0);
 
@@ -400,11 +405,9 @@ function MessageBubble({
         <div className="relative">
           <div
             onClick={onActivate}
-            className="cursor-pointer rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm relative"
-            style={{
-              backgroundColor: mine ? "hsl(var(--primary))" : "hsl(var(--muted))",
-              color: mine ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
-            }}
+            className={`cursor-pointer rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words shadow-sm relative ${
+              mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+            }`}
           >
             {m.pinned_at && (
               <Pin className={`absolute -top-1.5 ${mine ? "-left-1.5" : "-right-1.5"} w-3.5 h-3.5 text-primary bg-background rounded-full p-0.5`} />
