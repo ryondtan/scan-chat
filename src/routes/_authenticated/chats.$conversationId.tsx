@@ -10,8 +10,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, GroupAvatar } from "@/components/chat/avatar";
 import {
-  ArrowLeft, Send, Trash2, Paperclip, Search, X, Pin, Smile,
-  Reply as ReplyIcon, Forward, Users, MoreVertical, Download, LogOut,
+  ArrowLeft, Send, Trash2, Paperclip, Search, X, Pin, Image as ImageIcon,
+  Reply as ReplyIcon, Forward, Users, MoreVertical, Download, LogOut, Mic, Square,
 } from "lucide-react";
 import { toast } from "sonner";
 
