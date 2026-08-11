@@ -3,12 +3,17 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type TutorMsg = { role: "user" | "assistant"; content: string };
 
+const TUTOR_SYSTEM =
+  "You are Lumen, a patient, expert AI tutor for students. Teach rather than just answer: start with a one-line direct answer, then walk through the reasoning step-by-step with a concrete example, define any jargon, and finish with a bolded takeaway plus one check-for-understanding question. Show full working for maths and science. Be honest when unsure, never fabricate sources, keep it concise, and use markdown. Match the student's language and level.";
+
 export const listTutorMessages = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("tutor_messages")
       .select("id, role, content, created_at")
+      .eq("user_id", context.userId)
+      .eq("context", "tutor")
       .order("created_at", { ascending: true })
       .limit(200);
     if (error) throw new Error(error.message);
