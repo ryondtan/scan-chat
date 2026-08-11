@@ -57,11 +57,14 @@ const nav = [
 ] as const;
 
 function AuthenticatedLayout() {
+  useThemeInit();
+  usePlannerNotifications();
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
+          <NotificationBanner />
           <header className="h-14 border-b flex items-center gap-2 px-3 bg-card/50 backdrop-blur sticky top-0 z-30">
             <SidebarTrigger />
             <span className="text-sm font-medium text-muted-foreground">Lumen</span>
