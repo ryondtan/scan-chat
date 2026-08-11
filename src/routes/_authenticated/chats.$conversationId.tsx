@@ -173,6 +173,59 @@ function ConversationPage() {
     }
   };
 
+  const startRecording = async () => {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      const chunks: BlobPart[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null; }
+        setRecording(false);
+        setRecSecs(0);
+        const type = rec.mimeType || "audio/webm";
+        const blob = new Blob(chunks, { type });
+        if (blob.size < 1000) return;
+        const ext = type.includes("mp4") ? "m4a" : "webm";
+        await handleFile(new File([blob], `voice-${Date.now()}.${ext}`, { type }));
+      };
+      recorderRef.current = rec;
+      rec.start();
+      setRecording(true);
+      setRecSecs(0);
+      recTimerRef.current = setInterval(() => {
+        setRecSecs((s) => {
+          if (s >= 120) { stopRecording(); return s; }
+          return s + 1;
+        });
+      }, 1000);
+    } catch {
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    recorderRef.current?.state === "recording" && recorderRef.current.stop();
+  };
+
+  const cancelRecording = () => {
+    const rec = recorderRef.current;
+    if (!rec) return;
+    rec.onstop = null;
+    if (rec.state === "recording") rec.stop();
+    rec.stream.getTracks().forEach((t) => t.stop());
+    if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null; }
+    setRecording(false);
+    setRecSecs(0);
+  };
+
+  useEffect(() => () => { if (recTimerRef.current) clearInterval(recTimerRef.current); }, []);
+
+
+
   const broadcastTyping = () => {
     if (!me || !typingChannelRef.current) return;
     const now = Date.now();
