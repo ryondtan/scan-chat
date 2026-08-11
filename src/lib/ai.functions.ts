@@ -83,7 +83,7 @@ export const askAssistant = createServerFn({ method: "POST" })
       systemPrompt += ` Target language: ${data.targetLanguage}.`;
     }
 
-    // Load prior chat turns for conversational modes
+    // Load the most recent chat turns for conversational modes
     const history: ChatTurn[] =
       data.mode === "chat"
         ? (
@@ -92,9 +92,12 @@ export const askAssistant = createServerFn({ method: "POST" })
               .select("role, content")
               .eq("user_id", context.userId)
               .eq("context", data.context)
-              .order("created_at", { ascending: true })
-              .limit(30)).data ?? []
-          ).map((r) => ({ role: r.role as "user" | "assistant", content: r.content }))
+              .order("created_at", { ascending: false })
+              .limit(20)).data ?? []
+          )
+            .map((r) => ({ role: r.role as "user" | "assistant", content: r.content }))
+            .filter((r) => r.role === "user" || r.role === "assistant")
+            .reverse()
         : [];
 
     // Build user content — optionally include a document attachment
