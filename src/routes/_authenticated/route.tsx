@@ -29,6 +29,8 @@ import {
   Users,
 } from "lucide-react";
 import { AskAIButton } from "@/components/ask-ai";
+import { NotificationBanner, usePlannerNotifications } from "@/lib/notifications";
+import { useThemeInit } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
