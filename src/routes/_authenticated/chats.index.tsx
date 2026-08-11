@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { listConversations, type ConversationSummary } from "@/lib/chat-api";
+import { useEffect, useState } from "react";
+import { listConversations, deleteConversation, leaveConversation, type ConversationSummary } from "@/lib/chat-api";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, GroupAvatar } from "@/components/chat/avatar";
-import { MessageCircle, Plus, Users } from "lucide-react";
+import { MessageCircle, Plus, Users, MoreVertical, Trash2, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/chats/")({
   ssr: false,
