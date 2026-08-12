@@ -58,13 +58,30 @@ export async function deleteChannel(channelId: string) {
 export async function getChannelMessages(channelId: string, limit = 200): Promise<Message[]> {
   const { data, error } = await supabase
     .from("messages")
-    .select("*, reply_to:messages!messages_reply_to_id_fkey(id, content, sender_id, attachment_name, attachment_type)")
+    .select("*")
     .eq("channel_id", channelId)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
   const rows = ((data ?? []) as unknown as Message[]).reverse();
   if (rows.length === 0) return rows;
+
+  // Resolve replied-to messages separately (avoids self-referencing embed issues)
+  const replyIds = [...new Set(rows.map((r) => r.reply_to_id).filter(Boolean) as string[])];
+  if (replyIds.length) {
+    const { data: parents } = await supabase
+      .from("messages")
+      .select("id, content, sender_id, attachment_name, attachment_type")
+      .in("id", replyIds);
+    const byId = new Map((parents ?? []).map((p) => [p.id, p]));
+    rows.forEach((r) => {
+      if (r.reply_to_id) {
+        const p = byId.get(r.reply_to_id);
+        if (p) (r as unknown as { reply_to: unknown }).reply_to = p;
+      }
+    });
+  }
+
   const { data: reacts } = await supabase
     .from("message_reactions")
     .select("*")
