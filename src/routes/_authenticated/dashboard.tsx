@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Lumen" },
-      { name: "description", content: "Your day at a glance: schedule, homework due, upcoming quizzes, notes and announcements." },
+      { name: "description", content: "Your day at a glance: schedule, homework due, upcoming quizzes, notes and quick AI answers." },
     ],
   }),
   component: Dashboard,
