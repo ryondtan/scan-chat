@@ -1,3 +1,4 @@
+import { errMsg } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,7 +60,7 @@ export function ChannelsPanel({
   }, [groupId]);
 
   useEffect(() => {
-    load().catch((e) => toast.errorerrMsg(e));
+    load().catch((e) => toast.error(errMsg(e)));
   }, [load]);
 
   // Presence across the whole group
@@ -103,7 +104,7 @@ export function ChannelsPanel({
     try {
       setResults(await searchChannelMessages(groupId, query));
     } catch (err) {
-      toast.errorerrMsg(err);
+      toast.error(errMsg(err));
     }
   };
 
@@ -190,7 +191,7 @@ function ChannelSidebar({
       onChanged();
       onSelect(c.id);
     } catch (err) {
-      toast.errorerrMsg(err);
+      toast.error(errMsg(err));
     }
   };
 
@@ -317,7 +318,7 @@ function ChannelChat({
   }, [channel.id]);
 
   useEffect(() => {
-    refresh().catch((e) => toast.errorerrMsg(e));
+    refresh().catch((e) => toast.error(errMsg(e)));
   }, [refresh]);
 
   useEffect(() => {
@@ -361,7 +362,7 @@ function ChannelChat({
       setReplyTo(null);
       await refresh();
     } catch (err) {
-      toast.errorerrMsg(err);
+      toast.error(errMsg(err));
       setText(body);
     } finally {
       setSending(false);
@@ -375,7 +376,7 @@ function ChannelChat({
       setReplyTo(null);
       await refresh();
     } catch (err) {
-      toast.errorerrMsg(err);
+      toast.error(errMsg(err));
     }
   };
 

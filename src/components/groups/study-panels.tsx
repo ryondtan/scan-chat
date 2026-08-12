@@ -1,3 +1,4 @@
+import { errMsg } from "@/lib/utils";
 import { Markdown } from "@/components/markdown";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -37,7 +38,7 @@ const btnGhost = "inline-flex items-center gap-2 px-3 py-2 rounded-lg border tex
 const input = "w-full rounded-lg border bg-background px-3 py-2 text-sm";
 
 function err(e: unknown) {
-  toast.errorerrMsg(e);
+  toast.error(errMsg(e));
 }
 
 /* ============================ FLASHCARDS ============================ */

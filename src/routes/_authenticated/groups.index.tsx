@@ -1,3 +1,4 @@
+import { errMsg } from "@/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -61,7 +62,7 @@ function GroupsPage() {
       toast.success("Group created");
       navigate({ to: "/groups/$groupId", params: { groupId: g.id } });
     } catch (e) {
-      toast.errorerrMsg(e);
+      toast.error(errMsg(e));
     } finally {
       setBusy(false);
     }
@@ -75,7 +76,7 @@ function GroupsPage() {
       toast.success(`Joined ${g.name}`);
       navigate({ to: "/groups/$groupId", params: { groupId: g.id } });
     } catch (e) {
-      toast.errorerrMsg(e);
+      toast.error(errMsg(e));
     } finally {
       setBusy(false);
     }
