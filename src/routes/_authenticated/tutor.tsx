@@ -113,7 +113,7 @@ function TutorPage() {
                     {m.content}
                   </div>
                 ) : (
-                  <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{m.content}</div>
+                  <Markdown content={m.content} className="text-foreground" />
                 )}
               </div>
             ))
