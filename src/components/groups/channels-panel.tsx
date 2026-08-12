@@ -59,7 +59,7 @@ export function ChannelsPanel({
   }, [groupId]);
 
   useEffect(() => {
-    load().catch((e) => toast.error(e instanceof Error ? e.message : String(e)));
+    load().catch((e) => toast.errorerrMsg(e));
   }, [load]);
 
   // Presence across the whole group
@@ -103,7 +103,7 @@ export function ChannelsPanel({
     try {
       setResults(await searchChannelMessages(groupId, query));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
+      toast.errorerrMsg(err);
     }
   };
 
@@ -190,7 +190,7 @@ function ChannelSidebar({
       onChanged();
       onSelect(c.id);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
+      toast.errorerrMsg(err);
     }
   };
 
@@ -317,7 +317,7 @@ function ChannelChat({
   }, [channel.id]);
 
   useEffect(() => {
-    refresh().catch((e) => toast.error(e instanceof Error ? e.message : String(e)));
+    refresh().catch((e) => toast.errorerrMsg(e));
   }, [refresh]);
 
   useEffect(() => {
@@ -361,7 +361,7 @@ function ChannelChat({
       setReplyTo(null);
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
+      toast.errorerrMsg(err);
       setText(body);
     } finally {
       setSending(false);
@@ -375,7 +375,7 @@ function ChannelChat({
       setReplyTo(null);
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
+      toast.errorerrMsg(err);
     }
   };
 

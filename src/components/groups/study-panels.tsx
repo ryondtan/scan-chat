@@ -37,7 +37,7 @@ const btnGhost = "inline-flex items-center gap-2 px-3 py-2 rounded-lg border tex
 const input = "w-full rounded-lg border bg-background px-3 py-2 text-sm";
 
 function err(e: unknown) {
-  toast.error(e instanceof Error ? e.message : String(e));
+  toast.errorerrMsg(e);
 }
 
 /* ============================ FLASHCARDS ============================ */

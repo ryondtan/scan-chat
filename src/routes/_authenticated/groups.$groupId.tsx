@@ -49,7 +49,7 @@ function GroupDetailPage() {
     getFn({ data: { groupId } })
       .then((r) => setState(r as unknown as { group: StudyGroup; members: GroupMember[]; myRole: string }))
       .catch((e) => {
-        toast.error(e instanceof Error ? e.message : String(e));
+        toast.errorerrMsg(e);
         navigate({ to: "/groups" });
       });
   }, [getFn, groupId, navigate]);
