@@ -4,14 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { PageShell } from "@/lib/page-shell";
 import { getDashboardData, quickAsk } from "@/lib/school.functions";
-import { Calendar, BookOpen, Sparkles, StickyNote, Flame, Megaphone, Send, Loader2, Clock } from "lucide-react";
+import { Calendar, BookOpen, Sparkles, StickyNote, Flame, Send, Loader2, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
   head: () => ({
     meta: [
       { title: "Dashboard — Lumen" },
-      { name: "description", content: "Your day at a glance: schedule, homework due, upcoming quizzes, notes and announcements." },
+      { name: "description", content: "Your day at a glance: schedule, homework due, upcoming quizzes, notes and quick AI answers." },
     ],
   }),
   component: Dashboard,
@@ -112,15 +112,6 @@ function Dashboard() {
             {!answer && !asking && <p className="mt-3 text-xs text-muted-foreground">Powered by Gemini · fast answers, no chat needed.</p>}
           </div>
 
-          <Card icon={Megaphone} title="Announcements" to="/planner" empty="No announcements yet." colSpan="sm:col-span-2">
-            {data?.announcements.map((a: any) => (
-              <li key={a.id} className="py-2 border-b last:border-0">
-                <div className="text-sm font-medium">{a.title}</div>
-                <div className="text-xs text-muted-foreground line-clamp-2">{a.body}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{a.author?.display_name ?? "Teacher"} · {new Date(a.created_at).toLocaleDateString()}</div>
-              </li>
-            ))}
-          </Card>
         </div>
       )}
     </PageShell>

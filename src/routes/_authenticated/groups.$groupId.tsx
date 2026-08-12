@@ -1,3 +1,4 @@
+import { errMsg } from "@/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -49,7 +50,7 @@ function GroupDetailPage() {
     getFn({ data: { groupId } })
       .then((r) => setState(r as unknown as { group: StudyGroup; members: GroupMember[]; myRole: string }))
       .catch((e) => {
-        toast.error(e instanceof Error ? e.message : String(e));
+        toast.error(errMsg(e));
         navigate({ to: "/groups" });
       });
   }, [getFn, groupId, navigate]);

@@ -23,6 +23,7 @@ import {
   listUserFilesLite,
   type AiMode,
 } from "@/lib/ai.functions";
+import { Markdown } from "@/components/markdown";
 
 type Msg = { id?: string; role: "user" | "assistant"; content: string };
 
@@ -185,7 +186,7 @@ function AskAIPanel({ onClose }: { onClose: () => void }) {
                     {m.content}
                   </div>
                 ) : (
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</div>
+                  <Markdown content={m.content} />
                 )}
               </div>
             ))

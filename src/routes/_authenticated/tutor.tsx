@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Send, Sparkles, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { listTutorMessages, sendTutorMessage, clearTutorMessages } from "@/lib/tutor.functions";
+import { Markdown } from "@/components/markdown";
 
 export const Route = createFileRoute("/_authenticated/tutor")({
   ssr: false,
@@ -113,7 +114,7 @@ function TutorPage() {
                     {m.content}
                   </div>
                 ) : (
-                  <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{m.content}</div>
+                  <Markdown content={m.content} className="text-foreground" />
                 )}
               </div>
             ))

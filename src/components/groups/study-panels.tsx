@@ -1,3 +1,5 @@
+import { errMsg } from "@/lib/utils";
+import { Markdown } from "@/components/markdown";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -36,7 +38,7 @@ const btnGhost = "inline-flex items-center gap-2 px-3 py-2 rounded-lg border tex
 const input = "w-full rounded-lg border bg-background px-3 py-2 text-sm";
 
 function err(e: unknown) {
-  toast.error(e instanceof Error ? e.message : String(e));
+  toast.error(errMsg(e));
 }
 
 /* ============================ FLASHCARDS ============================ */
@@ -420,9 +422,9 @@ export function GroupAiPanel({ groupId, members }: { groupId: string; members: G
             <div key={m.id} className={m.role === "assistant" ? "" : "text-right"}>
               <div className="text-[11px] text-muted-foreground mb-1">{nameOf(m.user_id)}</div>
               <div
-                className={`inline-block max-w-[90%] text-left rounded-xl px-3 py-2 text-sm whitespace-pre-wrap ${m.role === "assistant" ? "bg-accent" : "bg-primary text-primary-foreground"}`}
+                className={`inline-block max-w-[90%] text-left rounded-xl px-3 py-2 text-sm ${m.role === "assistant" ? "bg-accent" : "bg-primary text-primary-foreground whitespace-pre-wrap"}`}
               >
-                {m.content}
+                {m.role === "assistant" ? <Markdown content={m.content} /> : m.content}
               </div>
             </div>
           ))
