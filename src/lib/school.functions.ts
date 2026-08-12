@@ -120,36 +120,6 @@ export const deleteEvent = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ---------- ANNOUNCEMENTS ----------
-export const listAnnouncements = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("school_announcements")
-      .select("*, author:profiles!school_announcements_author_id_fkey(display_name, username, avatar_url)")
-      .order("created_at", { ascending: false })
-      .limit(20);
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  });
-
-export const createAnnouncement = createServerFn({ method: "POST" })
-  .inputValidator((raw: unknown) => {
-    const d = raw as { title?: string; body?: string };
-    if (!d?.title?.trim() || !d?.body?.trim()) throw new Error("Title and body required");
-    return { title: d.title.trim().slice(0, 200), body: d.body.trim().slice(0, 4000) };
-  })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
-      .from("school_announcements")
-      .insert({ ...data, author_id: context.userId })
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    return row;
-  });
-
 // ---------- DASHBOARD ----------
 export const getDashboardData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -159,7 +129,7 @@ export const getDashboardData = createServerFn({ method: "GET" })
     const endOfDay = new Date(now); endOfDay.setHours(23, 59, 59, 999);
     const in7 = new Date(now); in7.setDate(in7.getDate() + 7);
 
-    const [profile, todayEvents, dueToday, upcomingQuizzes, recentNotes, announcements] = await Promise.all([
+    const [profile, todayEvents, dueToday, upcomingQuizzes, recentNotes] = await Promise.all([
       context.supabase.from("profiles").select("*").eq("id", context.userId).single(),
       context.supabase.from("planner_events").select("*")
         .gte("starts_at", startOfDay.toISOString()).lte("starts_at", endOfDay.toISOString())
@@ -175,9 +145,6 @@ export const getDashboardData = createServerFn({ method: "GET" })
       context.supabase.from("tutor_messages").select("id, content, created_at, role")
         .eq("role", "assistant")
         .order("created_at", { ascending: false }).limit(3),
-      context.supabase.from("school_announcements")
-        .select("id, title, body, created_at, author:profiles!school_announcements_author_id_fkey(display_name)")
-        .order("created_at", { ascending: false }).limit(3),
     ]);
 
     return {
@@ -186,7 +153,6 @@ export const getDashboardData = createServerFn({ method: "GET" })
       dueToday: dueToday.data ?? [],
       upcomingQuizzes: upcomingQuizzes.data ?? [],
       recentNotes: recentNotes.data ?? [],
-      announcements: announcements.data ?? [],
     };
   });
 
