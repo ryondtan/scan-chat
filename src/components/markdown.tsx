@@ -10,7 +10,7 @@ export function Markdown({ content, className = "" }: { content: string; classNa
     <div className={`text-sm leading-relaxed space-y-2 break-words ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false, errorColor: "inherit", trust: true }]]}
         components={{
           h1: (p) => <h1 className="text-base font-semibold mt-3 first:mt-0" {...p} />,
           h2: (p) => <h2 className="text-base font-semibold mt-3 first:mt-0" {...p} />,

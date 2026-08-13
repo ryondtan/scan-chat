@@ -81,20 +81,6 @@ function Dashboard() {
             ))}
           </Card>
 
-          <Card icon={Sparkles} title="Upcoming quizzes" to="/planner" empty="No quizzes in the next 7 days.">
-            {data?.upcomingQuizzes.map((q: any) => (
-              <li key={q.id} className="py-1.5 text-sm">
-                <div className="truncate">{q.title}</div>
-                <div className="text-xs text-muted-foreground">{new Date(q.starts_at).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</div>
-              </li>
-            ))}
-          </Card>
-
-          <Card icon={StickyNote} title="Recent notes" to="/notes" empty="Chat with the tutor to build notes.">
-            {data?.recentNotes.map((n: any) => (
-              <li key={n.id} className="py-1.5 text-sm line-clamp-2 text-muted-foreground">{n.content.slice(0, 140)}</li>
-            ))}
-          </Card>
 
           <div className="rounded-xl border bg-card p-5 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-3">
