@@ -18,8 +18,6 @@ import {
 import {
   Home,
   MessagesSquare,
-  StickyNote,
-  Brain,
   Sparkles,
   Settings,
   LogOut,
@@ -47,8 +45,6 @@ const nav = [
   { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
   { to: "/chats", label: "Chats", icon: MessageCircle },
   { to: "/groups", label: "Study Groups", icon: Users },
-  { to: "/notes", label: "Notes", icon: StickyNote },
-  { to: "/flashcards", label: "Flashcards", icon: Brain },
   { to: "/quiz", label: "Quiz", icon: Sparkles },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/files", label: "Files", icon: FolderOpen },
