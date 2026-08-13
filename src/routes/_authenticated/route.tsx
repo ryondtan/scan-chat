@@ -18,8 +18,6 @@ import {
 import {
   Home,
   MessagesSquare,
-  StickyNote,
-  Brain,
   Sparkles,
   Settings,
   LogOut,

@@ -4,14 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { PageShell } from "@/lib/page-shell";
 import { getDashboardData, quickAsk } from "@/lib/school.functions";
-import { Calendar, BookOpen, Sparkles, StickyNote, Flame, Send, Loader2, Clock } from "lucide-react";
+import { Calendar, BookOpen, Sparkles, Flame, Send, Loader2, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
   head: () => ({
     meta: [
       { title: "Dashboard — Lumen" },
-      { name: "description", content: "Your day at a glance: schedule, homework due, upcoming quizzes, notes and quick AI answers." },
+      { name: "description", content: "Your day at a glance: schedule, homework due and quick AI answers." },
     ],
   }),
   component: Dashboard,
