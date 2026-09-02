@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          target: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          target?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          target?: string | null
+        }
+        Relationships: []
+      }
+      allowed_email_domains: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          domain: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          domain: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          domain?: string
+        }
+        Relationships: []
+      }
       conversation_members: {
         Row: {
           conversation_id: string
@@ -1147,11 +1189,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["staff_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["staff_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["staff_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          created_at: string
+          display_name: string
+          id: string
+          is_admin: boolean
+          is_moderator: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          username: string
+        }[]
+      }
+      admin_platform_stats: { Args: never; Returns: Json }
       channel_group_id: { Args: { _channel_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -1160,6 +1239,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_staff_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["staff_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
       is_conversation_member: {
         Args: { _cid: string; _uid: string }
         Returns: boolean
@@ -1172,6 +1259,7 @@ export type Database = {
     }
     Enums: {
       app_role: "student" | "teacher"
+      staff_role: "admin" | "moderator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1300,6 +1388,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "teacher"],
+      staff_role: ["admin", "moderator"],
     },
   },
 } as const
