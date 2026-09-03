@@ -25,10 +25,12 @@ import {
   CalendarDays,
   FolderOpen,
   Users,
+  ShieldCheck,
 } from "lucide-react";
 import { AskAIButton } from "@/components/ask-ai";
 import { NotificationBanner, usePlannerNotifications } from "@/lib/notifications";
 import { useThemeInit } from "@/lib/theme";
+import { useIsAdmin } from "@/lib/admin-api";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -80,6 +82,7 @@ function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const signOut = useSignOut();
+  const { data: isAdmin } = useIsAdmin();
 
   return (
     <Sidebar collapsible="icon">
@@ -113,6 +116,23 @@ function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Owner</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith("/admin")} tooltip="Admin">
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Admin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

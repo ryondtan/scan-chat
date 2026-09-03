@@ -47,7 +47,7 @@ export async function fetchPlatformStats(): Promise<PlatformStats> {
 
 export async function fetchAdminUsers(search: string): Promise<AdminUserRow[]> {
   const { data, error } = await supabase.rpc("admin_list_users", {
-    _search: search || null,
+    _search: search || undefined,
     _limit: 100,
   });
   if (error) throw error;
