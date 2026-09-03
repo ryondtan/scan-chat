@@ -13,7 +13,7 @@ import {
   useIsAdmin,
 } from "@/lib/admin-api";
 import { ShieldCheck, Users, MessagesSquare, FolderOpen, Loader2, X, Lock } from "lucide-react";
-import { errorMessage } from "@/lib/utils";
+import { errMsg as errorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
