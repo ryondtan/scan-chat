@@ -17,9 +17,9 @@ export const Route = createFileRoute("/_authenticated/groups/$groupId")({
   head: () => ({
     meta: [
       { title: "Study Group — Lumen" },
-      { name: "description", content: "Group channels, voice rooms and chat for your study group." },
+      { name: "description", content: "Group channels, calling rooms and chat for your study group." },
       { property: "og:title", content: "Study Group — Lumen" },
-      { property: "og:description", content: "Text and voice channels for your study group." },
+      { property: "og:description", content: "Text and calling channels for your study group." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

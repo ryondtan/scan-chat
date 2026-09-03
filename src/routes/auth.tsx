@@ -25,8 +25,17 @@ function AuthPage() {
   const [role, setRole] = useState<"student" | "teacher">("student");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [step, setStep] = useState<"form" | "otp" | "forgot">("form");
+  const [code, setCode] = useState("");
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => { document.getElementById("email-input")?.focus(); }, [mode]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   const signInWithGoogle = async () => {
     setGoogleLoading(true);
@@ -42,6 +51,42 @@ function AuthPage() {
     } finally {
       setGoogleLoading(false);
     }
+  };
+
+  const sendCode = async (addr: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email: addr,
+      options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    if (error) throw error;
+    setCooldown(60);
+  };
+
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
+      if (error) throw error;
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid or expired code");
+    } finally { setLoading(false); }
+  };
+
+  const sendReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Password reset link sent — check your inbox.");
+      setStep("form");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send reset email");
+    } finally { setLoading(false); }
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -69,16 +114,23 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("Account created!");
+        navigate({ to: "/dashboard" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // Step 2: email verification code before the session is kept.
+        await supabase.auth.signOut();
+        await sendCode(email.trim());
+        setCode("");
+        setStep("otp");
+        toast.success("We emailed you a 6-digit verification code.");
       }
-      navigate({ to: "/dashboard" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
       toast.error(msg.includes("duplicate") ? "Username already taken" : msg);
     } finally { setLoading(false); }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-b from-accent/40 to-background">
