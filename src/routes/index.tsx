@@ -60,7 +60,7 @@ function Landing() {
           { icon: Brain, title: "Flashcards", desc: "Turn any topic into spaced-repetition flashcards." },
           { icon: Sparkles, title: "Quiz Generator", desc: "Auto-generate quizzes from your notes or a topic." },
           { icon: GraduationCap, title: "Study Groups", desc: "Share notes, files, tasks, and a group AI tutor." },
-          { icon: ArrowRight, title: "Voice Channels", desc: "Talk, share your screen and study live with your group." },
+          { icon: ArrowRight, title: "Calling Channels", desc: "Talk, share your screen and study live with your group." },
         ].map((f) => (
           <div key={f.title} className="rounded-xl border p-6 bg-card">
             <div className="w-10 h-10 rounded-lg bg-accent grid place-items-center mb-4">

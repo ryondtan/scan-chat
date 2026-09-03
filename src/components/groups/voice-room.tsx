@@ -145,7 +145,7 @@ export function VoiceRoom({
       localRef.current = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     } catch {
       setConnecting(false);
-      toast.error("Microphone access is required to join voice.");
+      toast.error("Microphone access is required to join the call.");
       return;
     }
 
@@ -254,7 +254,7 @@ export function VoiceRoom({
           </div>
           <p className="font-medium">{channelName}</p>
           <p className="text-sm text-muted-foreground">
-            {participants.length === 0 ? "No one is here yet" : `${participants.length} in voice`}
+            {participants.length === 0 ? "No one is here yet" : `${participants.length} in call`}
           </p>
         </div>
 
@@ -292,7 +292,7 @@ export function VoiceRoom({
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60"
           >
             {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Volume2 className="w-4 h-4" />}
-            {connecting ? "Connecting…" : "Join voice"}
+            {connecting ? "Connecting…" : "Join call"}
           </button>
         ) : (
           <>

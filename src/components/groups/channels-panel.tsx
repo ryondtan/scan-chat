@@ -209,7 +209,7 @@ function ChannelSidebar({
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={type === "text" ? "new-channel" : "Study Room"}
+            placeholder={type === "text" ? "new-channel" : "Study Call"}
             className="w-full px-2 py-1.5 text-xs rounded-md bg-input focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </form>
@@ -258,7 +258,7 @@ function ChannelSidebar({
       ) : (
         <>
           {section("text", "Text channels")}
-          {section("voice", "Voice channels")}
+          {section("voice", "Calling channels")}
         </>
       )}
     </aside>
