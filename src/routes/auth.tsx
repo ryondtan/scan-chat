@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Sparkles } from "lucide-react";
+import { fetchAllowedDomains } from "@/lib/admin-api";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -48,6 +49,12 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        const allowed = await fetchAllowedDomains();
+        const domain = email.trim().toLowerCase().split("@")[1] ?? "";
+        if (allowed.length > 0 && !allowed.includes(domain)) {
+          toast.error(`Sign-ups are limited to: ${allowed.map((d) => "@" + d).join(", ")}`);
+          return;
+        }
         const uname = username.trim().toLowerCase();
         if (!/^[a-z0-9_]{3,20}$/.test(uname)) {
           toast.error("Username: 3–20 chars, a–z, 0–9, _");
