@@ -3,17 +3,30 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ArrowLeft } from "lucide-react";
 import { fetchAllowedDomains } from "@/lib/admin-api";
+import { errMsg } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Sign in to Lumen — AI school workspace" },
+      { name: "description", content: "Sign in or create your Lumen account with email verification, then study, chat and plan with AI." },
+      { property: "og:title", content: "Sign in to Lumen" },
+      { property: "og:description", content: "Verified sign-in for the Lumen AI school workspace." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (data.session) throw redirect({ to: "/dashboard" });
   },
   component: AuthPage,
 });
+
+type Step = "form" | "otp" | "forgot";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -25,7 +38,8 @@ function AuthPage() {
   const [role, setRole] = useState<"student" | "teacher">("student");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [step, setStep] = useState<"form" | "otp" | "forgot">("form");
+  const [step, setStep] = useState<Step>("form");
+  const [otpFor, setOtpFor] = useState<"signin" | "signup">("signin");
   const [code, setCode] = useState("");
   const [cooldown, setCooldown] = useState(0);
 
@@ -47,16 +61,24 @@ function AuthPage() {
       if (result.redirected) return;
       navigate({ to: "/dashboard" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
+      toast.error(errMsg(err));
     } finally {
       setGoogleLoading(false);
     }
   };
 
-  const sendCode = async (addr: string) => {
+  // Sends a 6-digit code. For sign-up the account is only created once the
+  // code is verified, so unreachable/fake addresses can never register.
+  const sendCode = async (addr: string, createUser: boolean) => {
     const { error } = await supabase.auth.signInWithOtp({
       email: addr,
-      options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/dashboard` },
+      options: {
+        shouldCreateUser: createUser,
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+        ...(createUser
+          ? { data: { username: username.trim().toLowerCase(), display_name: displayName.trim() || username.trim().toLowerCase(), role } }
+          : {}),
+      },
     });
     if (error) throw error;
     setCooldown(60);
@@ -66,12 +88,29 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: code.trim(),
+        type: "email",
+      });
       if (error) throw error;
+      if (otpFor === "signup" && password) {
+        const { error: pwErr } = await supabase.auth.updateUser({ password });
+        if (pwErr) throw pwErr;
+      }
+      toast.success(otpFor === "signup" ? "Account verified and created!" : "Verified");
       navigate({ to: "/dashboard" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Invalid or expired code");
+      toast.error(errMsg(err) || "Invalid or expired code");
     } finally { setLoading(false); }
+  };
+
+  const resend = async () => {
+    if (cooldown > 0) return;
+    try {
+      await sendCode(email.trim(), otpFor === "signup");
+      toast.success("New code sent");
+    } catch (err) { toast.error(errMsg(err)); }
   };
 
   const sendReset = async (e: React.FormEvent) => {
@@ -85,7 +124,7 @@ function AuthPage() {
       toast.success("Password reset link sent — check your inbox.");
       setStep("form");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not send reset email");
+      toast.error(errMsg(err));
     } finally { setLoading(false); }
   };
 
@@ -105,32 +144,28 @@ function AuthPage() {
           toast.error("Username: 3–20 chars, a–z, 0–9, _");
           return;
         }
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { username: uname, display_name: displayName.trim() || uname, role },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created!");
-        navigate({ to: "/dashboard" });
+        // Step 1: email the code. No account exists until the code is verified.
+        await sendCode(email.trim(), true);
+        setOtpFor("signup");
+        setCode("");
+        setStep("otp");
+        toast.success("We emailed you a 6-digit verification code.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         // Step 2: email verification code before the session is kept.
         await supabase.auth.signOut();
-        await sendCode(email.trim());
+        await sendCode(email.trim(), false);
+        setOtpFor("signin");
         setCode("");
         setStep("otp");
         toast.success("We emailed you a 6-digit verification code.");
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
+      const msg = errMsg(err);
       toast.error(msg.includes("duplicate") ? "Username already taken" : msg);
     } finally { setLoading(false); }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-b from-accent/40 to-background">
@@ -142,63 +177,129 @@ function AuthPage() {
           <h1 className="text-2xl font-bold">Lumen</h1>
           <p className="text-sm text-muted-foreground mt-1">AI learning for students and teachers</p>
         </div>
+
         <div className="bg-card rounded-2xl border shadow-sm p-6">
-          <div className="flex gap-1 p-1 bg-muted rounded-lg mb-5">
-            {(["signin", "signup"] as const).map((m) => (
-              <button key={m} type="button" onClick={() => setMode(m)}
-                className={`flex-1 py-2 text-sm font-medium rounded-md transition ${mode === m ? "bg-card shadow-sm" : "text-muted-foreground"}`}>
-                {m === "signin" ? "Sign in" : "Sign up"}
+          {step === "otp" && (
+            <div className="space-y-4">
+              <button type="button" onClick={() => setStep("form")}
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="w-4 h-4" /> Back
               </button>
-            ))}
-          </div>
+              <div>
+                <h2 className="font-semibold text-lg">Enter your 6-digit code</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Sent to <span className="font-medium text-foreground">{email}</span>.
+                  {otpFor === "signup" && " Your account is created once the code is verified."}
+                </p>
+              </div>
+              <form onSubmit={verifyCode} className="space-y-3">
+                <input autoFocus inputMode="numeric" maxLength={6} value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="000000"
+                  className="w-full px-3 py-3 rounded-lg bg-input border-0 text-center text-2xl tracking-[0.4em] focus:outline-none focus:ring-2 focus:ring-ring" />
+                <button type="submit" disabled={loading || code.length !== 6}
+                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50">
+                  {loading ? "Verifying…" : "Verify"}
+                </button>
+              </form>
+              <button type="button" onClick={resend} disabled={cooldown > 0}
+                className="w-full text-sm text-muted-foreground hover:text-foreground disabled:opacity-50">
+                {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
+              </button>
+            </div>
+          )}
 
-          <button
-            type="button"
-            onClick={signInWithGoogle}
-            disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border bg-card hover:bg-accent text-sm font-medium transition disabled:opacity-50 mb-4"
-          >
-            <GoogleIcon />
-            {googleLoading ? "Opening Google…" : "Continue with Google"}
-          </button>
-
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">or with email</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-
-          <form onSubmit={submit} className="space-y-3">
-            {mode === "signup" && (
-              <>
-                <input required value={username} onChange={(e) => setUsername(e.target.value)}
-                  placeholder="username (3-20, a-z, 0-9, _)"
+          {step === "forgot" && (
+            <div className="space-y-4">
+              <button type="button" onClick={() => setStep("form")}
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="w-4 h-4" /> Back to sign in
+              </button>
+              <div>
+                <h2 className="font-semibold text-lg">Reset your password</h2>
+                <p className="text-sm text-muted-foreground mt-1">We'll email you a link to set a new password.</p>
+              </div>
+              <form onSubmit={sendReset} className="space-y-3">
+                <input autoFocus required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email" autoComplete="email"
                   className="w-full px-3 py-2.5 rounded-lg bg-input border-0 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Display name (optional)"
+                <button type="submit" disabled={loading}
+                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50">
+                  {loading ? "Sending…" : "Send reset link"}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {step === "form" && (
+            <>
+              <div className="flex gap-1 p-1 bg-muted rounded-lg mb-5">
+                {(["signin", "signup"] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => setMode(m)}
+                    className={`flex-1 py-2 text-sm font-medium rounded-md transition ${mode === m ? "bg-card shadow-sm" : "text-muted-foreground"}`}>
+                    {m === "signin" ? "Sign in" : "Sign up"}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={signInWithGoogle}
+                disabled={googleLoading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border bg-card hover:bg-accent text-sm font-medium transition disabled:opacity-50 mb-4"
+              >
+                <GoogleIcon />
+                {googleLoading ? "Opening Google…" : "Continue with Google"}
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground">or with email</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              <form onSubmit={submit} className="space-y-3">
+                {mode === "signup" && (
+                  <>
+                    <input required value={username} onChange={(e) => setUsername(e.target.value)}
+                      placeholder="username (3-20, a-z, 0-9, _)"
+                      className="w-full px-3 py-2.5 rounded-lg bg-input border-0 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                    <input value={displayName} onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Display name (optional)"
+                      className="w-full px-3 py-2.5 rounded-lg bg-input border-0 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                    <div className="flex gap-2">
+                      {(["student", "teacher"] as const).map((r) => (
+                        <button key={r} type="button" onClick={() => setRole(r)}
+                          className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${role === r ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground"}`}>
+                          {r === "student" ? "Student" : "Teacher"}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                <input id="email-input" required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email" autoComplete="email"
                   className="w-full px-3 py-2.5 rounded-lg bg-input border-0 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-                <div className="flex gap-2">
-                  {(["student", "teacher"] as const).map((r) => (
-                    <button key={r} type="button" onClick={() => setRole(r)}
-                      className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${role === r ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground"}`}>
-                      {r === "student" ? "Student" : "Teacher"}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-            <input id="email-input" required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email" autoComplete="email"
-              className="w-full px-3 py-2.5 rounded-lg bg-input border-0 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-            <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password" minLength={6}
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              className="w-full px-3 py-2.5 rounded-lg bg-input border-0 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
-            <button type="submit" disabled={loading}
-              className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition">
-              {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
-            </button>
-          </form>
+                <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password" minLength={6}
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  className="w-full px-3 py-2.5 rounded-lg bg-input border-0 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+                {mode === "signin" && (
+                  <button type="button" onClick={() => setStep("forgot")}
+                    className="text-xs text-muted-foreground hover:text-foreground">
+                    Forgot your password?
+                  </button>
+                )}
+                <button type="submit" disabled={loading}
+                  className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition">
+                  {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Send verification code"}
+                </button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Every sign-in and sign-up is confirmed with a 6-digit code emailed to your address.
+                </p>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>
