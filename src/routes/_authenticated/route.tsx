@@ -25,6 +25,7 @@ import {
   CalendarDays,
   FolderOpen,
   Users,
+  UserPlus,
   ShieldCheck,
 } from "lucide-react";
 import { AskAIButton } from "@/components/ask-ai";
@@ -46,6 +47,7 @@ const nav = [
   { to: "/dashboard", label: "Dashboard", icon: Home },
   { to: "/tutor", label: "AI Tutor", icon: MessagesSquare },
   { to: "/chats", label: "Chats", icon: MessageCircle },
+  { to: "/friends", label: "Friends", icon: UserPlus },
   { to: "/groups", label: "Study Groups", icon: Users },
   { to: "/quiz", label: "Quiz", icon: Sparkles },
   { to: "/planner", label: "Planner", icon: CalendarDays },
